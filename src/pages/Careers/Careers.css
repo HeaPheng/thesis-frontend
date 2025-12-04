@@ -1,0 +1,106 @@
+.careers-page {
+  background: #000;
+  min-height: 100vh;
+  padding-top: 65px;
+  padding-bottom: 80px;
+}
+
+.careers-container {
+  max-width: 1400px;   /* same width as Courses */
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+.careers-hero {
+  margin-bottom: 22px;
+}
+
+.careers-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 34px;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.careers-subtitle {
+  color: #cbd5e1;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+/* ✅ search UI same as Courses */
+.careers-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.careers-search {
+  flex: 1;
+  min-width: 240px;
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.careers-search::placeholder {
+  color: #94a3b8;
+}
+
+.careers-select {
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+  min-width: 160px;
+}
+
+/* ✅ grid like Courses */
+.careers-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  justify-items: stretch;
+}
+
+/* Make CareerCard stretch nicely */
+.careers-grid .career-card {
+  width: 100%;
+  max-width: none; /* let grid decide width */
+}
+
+/* responsive */
+@media (max-width: 1200px) {
+  .careers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .careers-title { font-size: 30px; }
+
+  .careers-controls {
+    flex-direction: column;
+  }
+
+  .careers-select {
+    width: 100%;
+  }
+
+  .careers-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.careers-empty {
+  margin-top: 30px;
+  color: #94a3b8;
+  text-align: center;
+}

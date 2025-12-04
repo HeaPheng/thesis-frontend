@@ -1,0 +1,22 @@
+{
+  "hero_title": "ស្វាគមន៍​មកកាន់វេទិកាការសិក្សា",
+  "hero_subtitle": "រៀនកូដជាដំណាក់កាលជាមួយភាសាអង់គ្លេស ឬ ខ្មែរ។",
+  "browse_courses": "រកមើលវគ្គសិក្សា",
+  "career_paths": "មុខរបរអាជីព",
+  "create_account": "បង្កើតគណនីរបស់អ្នក ✨",
+  "full_name": "ឈ្មោះពេញ",
+  "email": "អាសយដ្ឋានអ៊ីមែល",
+  "password": "ពាក្យសម្ងាត់",
+  "register": "ចុះឈ្មោះ",
+  "already_account": "មានគណនីរួចហើយ?",
+  "login": "ចូលគណនី",
+  "explore_courses": "ស្វែងរកវគ្គសិក្សារបស់យើង",
+  "react_course": "React សម្រាប់អ្នកចាប់ផ្តើម",
+  "react_desc": "រៀន React ជាដំណាក់កាលជាមួយគម្រោងអនុវត្ត។",
+  "html_course": "HTML & CSS ជំនាញខ្ពស់",
+  "html_desc": "ឈានដល់គោលបំណង front-end ជាមួយបច្ចេកទេស layout ស្អាត។",
+  "js_course": "JavaScript គ្រឹះ",
+  "js_desc": "យល់ដឹង JavaScript ជាមួយមេរៀនសាមញ្ញ និងច្បាស់លាស់។",
+  "view_all_courses": "មើលវគ្គទាំងអស់",
+  "view_all_careers": "មើលមុខរបរទាំងអស់"
+}

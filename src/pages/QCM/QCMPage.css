@@ -1,0 +1,260 @@
+/* Reuse LessonPage layout; only add quiz-specific styling */
+
+/* Make the inner card look like lesson content */
+
+
+/* Title inside card */
+.qcm-title {
+  font-size: 24px;
+  margin-bottom: 18px;
+  color: #ffffff;
+}
+
+/* Question block */
+.qcm-question-block {
+  margin-bottom: 24px;
+}
+
+.qcm-question-text {
+  font-size: 18px;
+  color: #e2e8f0;
+  margin-bottom: 16px;
+}
+
+/* Options */
+.qcm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qcm-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #020617;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border: 1px solid #1e293b;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.qcm-option input {
+  accent-color: #3b82f6;
+}
+
+.qcm-option span {
+  color: #cbd5e1;
+  font-size: 15px;
+}
+
+.qcm-option.selected {
+  border-color: #3b82f6;
+  background: #0b1120;
+}
+
+/* Bottom row inside card */
+.qcm-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 18px;
+  border-top: 1px solid #1e293b;
+}
+
+.qcm-question-count {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.qcm-next-btn {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: none;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.qcm-next-btn:hover {
+  background: #2563eb;
+}
+
+/* Result view */
+.qcm-result-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.qcm-result-summary {
+  background: #020617;
+  border-radius: 12px;
+  padding: 20px 24px;
+  border: 1px solid #1e293b;
+}
+
+.qcm-result-summary h2 {
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.qcm-result-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.qcm-label {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.qcm-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+/* Result buttons */
+.qcm-result-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.qcm-btn-primary,
+.qcm-btn-secondary {
+  border-radius: 999px;
+  padding: 8px 18px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.qcm-btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.qcm-btn-primary:hover {
+  background: #2563eb;
+}
+
+.qcm-btn-secondary {
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+}
+
+.qcm-btn-secondary:hover {
+  background: #1f2937;
+}
+
+/* Wrong answers review */
+.qcm-review-box {
+  background: #020617;
+  border-radius: 12px;
+  padding: 18px 22px;
+  border: 1px solid #1e293b;
+}
+
+.qcm-review-box h3 {
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.qcm-review-item {
+  border-top: 1px solid #1e293b;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.qcm-review-question {
+  color: #e5e7eb;
+  margin-bottom: 4px;
+}
+
+.qcm-review-answer {
+  font-size: 14px;
+}
+
+.qcm-review-answer span {
+  font-weight: 600;
+}
+
+.qcm-review-answer.correct {
+  color: #22c55e;
+}
+
+.qcm-review-answer.wrong {
+  color: #f97373;
+}
+
+/* Button used inside the burger dropdown to jump to a question */
+.qcm-jump-btn {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  padding: 0;
+}
+
+.qcm-jump-btn:hover {
+  color: #38bdf8;
+}
+/* Only affect buttons with lf-nav inside qcm-page */
+.qcm-page .lf-nav {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+/* Make lf-nav work nicely for buttons too */
+.lf-nav {
+  color: #38bdf8;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.qcm-locked-msg {
+  padding: 10px 14px;
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #b91c1c;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.qcm-warning {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #b91c1c;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.qcm-review-sub {
+  color: #cbd5e1;
+  font-size: 14px;
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.qcm-review-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}

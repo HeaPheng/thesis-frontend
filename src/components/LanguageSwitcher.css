@@ -1,0 +1,24 @@
+.lang-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  color: white; /* adjusts icon + text color for navbar */
+}
+
+.lang-icon {
+  font-size: 22px;     /* size of the icon */
+  margin-bottom: 2px;  /* small space between icon + label */
+  transition: 0.2s;
+}
+
+.lang-icon-container:hover .lang-icon {
+  transform: scale(1.15); /* little zoom when hover */
+}
+
+.lang-label {
+  font-size: 10px;
+  opacity: 0.85;
+  font-weight: 600;
+}

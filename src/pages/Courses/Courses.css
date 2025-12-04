@@ -1,0 +1,150 @@
+/* ✅ New wrapper (used by the updated Courses.jsx) */
+.courses-page {
+  background: #000;
+  min-height: 100vh;
+  padding-top: 65px;
+  /* navbar space */
+  padding-bottom: 80px;
+}
+
+/* Backward compatibility (if some components still use old class) */
+.courses-page-wrapper {
+  background: #000;
+  min-height: 100vh;
+  padding-top: 90px;
+  padding-bottom: 80px;
+}
+
+.courses-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+/* ✅ Hero / Header (Tips vibe) */
+.courses-hero {
+  margin-bottom: 22px;
+}
+
+.courses-title,
+.courses-header h1 {
+  color: #fff;
+  font-weight: 800;
+  font-size: 34px;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.courses-subtitle,
+.courses-header p {
+  color: #cbd5e1;
+  margin: 0 0 18px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ✅ Search + Select (Tips style) */
+.courses-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.courses-search {
+  flex: 1;
+  min-width: 240px;
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.courses-search::placeholder {
+  color: #94a3b8;
+}
+
+.courses-select {
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+  min-width: 160px;
+}
+
+/* ✅ Your grid (kept), just adapted to new container width */
+.courses-grid{
+  width: 100%;
+  display: grid;
+
+  /* ✅ allow fat cards but still responsive */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+
+  /* keep cards aligned with search section edges */
+  justify-items: stretch;
+}
+
+/* make sure each card stretches to fill its column (up to 460px) */
+.courses-grid .course-card{
+  width: 100%;
+  max-width: none;     /* ✅ let grid control width */
+}
+
+/* Desktop: limit each column width so cards don’t become TOO huge */
+@media (min-width: 1200px){
+  .courses-grid{
+    grid-template-columns: repeat(3, minmax(380px, 1fr));
+  }
+}
+
+/* Tablet */
+@media (max-width: 1200px){
+  .courses-grid{
+    grid-template-columns: repeat(2, minmax(340px, 1fr));
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px){
+  .courses-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+  .course-card{
+    max-width: 360px;
+    width: 100%;
+  }
+
+
+/* Empty state */
+.courses-empty {
+  margin-top: 30px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+  .courses-title,
+  .courses-header h1 {
+    font-size: 30px;
+  }
+
+  .courses-controls {
+    flex-direction: column;
+  }
+
+  .courses-select {
+    width: 100%;
+  }
+
+  .courses-grid {
+    gap: 26px !important;
+  }
+}

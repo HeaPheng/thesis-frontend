@@ -1,0 +1,126 @@
+/* --------------------------
+      FOOTER WRAPPER
+--------------------------- */
+.footer {
+  background: #111;
+  color: #ddd;
+  padding: 40px 40px 20px;   /* equal spacing left & right */
+  margin-top: 0px;
+}
+
+/* --------------------------
+      GRID LAYOUT
+--------------------------- */
+.footer-container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
+}
+
+/* --------------------------
+      BRAND SECTION
+--------------------------- */
+/* CENTER BRAND SECTION */
+.footer-brand {
+  align-items: center !important; 
+  text-align: center;
+}
+
+/* BIG LOGO */
+.footer-logo-big {
+  width: 120px;      /* adjust size */
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+/* TITLE UNDER LOGO */
+.footer-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+
+.footer-desc {
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 12px;
+  max-width: 260px;
+}
+
+/* --------------------------
+      EACH FOOTER SECTION
+--------------------------- */
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-section h4 {
+  color: #fff;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+/* Links */
+.footer-section a {
+  display: block;
+  color: #ccc;
+  font-size: 14px;
+  text-decoration: none;
+  margin: 6px 0;
+  transition: 0.25s;
+}
+
+.footer-section a:hover {
+  color: #0d6efd;
+  transform: translateX(4px);
+}
+
+/* --------------------------
+      CONTACT INFO
+--------------------------- */
+.footer-section p {
+  font-size: 14px;
+  margin: 6px 0;
+  color: #ccc;
+}
+
+.footer-section i {
+  margin-right: 6px;
+}
+
+/* --------------------------
+      SOCIAL ICONS
+--------------------------- */
+.footer-social {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-social i {
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.footer-social i:hover {
+  color: #0d6efd;
+  transform: translateY(-3px);
+}
+
+/* --------------------------
+      BOTTOM COPYRIGHT
+--------------------------- */
+.footer-bottom {
+  text-align: center;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #333;
+  font-size: 14px;
+  color: #666;
+}

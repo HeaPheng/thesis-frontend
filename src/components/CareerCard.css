@@ -1,0 +1,130 @@
+.career-card {
+  width: 100%;         /* allow card to expand */
+  max-width: 360px;    /* limit size to something reasonable */
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: 0.3s ease;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.career-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+}
+
+/* Image */
+.career-img-wrapper {
+  height: 180px;
+  overflow: hidden;
+}
+
+.career-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.3s ease;
+}
+
+.career-card:hover .career-img {
+  transform: scale(1.08);
+}
+
+/* Body */
+.career-body {
+  flex: 1;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(11, 18, 32);
+}
+
+.career-title {
+  font-weight: 700;
+  font-size: 20px;
+  color: rgb(59 130 246);
+}
+
+.career-description {
+  color: #fffefe;
+  margin-bottom: 12px;
+}
+
+.career-subtitle {
+  margin: 10px 18px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  text-align: start;
+}
+
+/* FIXED LIST ITEMS */
+.career-course-list {
+  padding-left: 18px;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 14px;
+}
+
+.career-course-list li {
+  display: flex;           /* FIX */
+  align-items: center;     /* FIX */
+  gap: 6px;                /* FIX */
+}
+
+.career-course-list li i {
+  color: #0d6efd;
+  font-size: 13px;
+  flex-shrink: 0;          /* FIX */
+}
+
+/* Button */
+.career-btn {
+  width: 100%;
+  background: #0d6efd;
+  border: none;
+  padding: 10px;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.2s ease;
+  margin-top: auto;
+  display: flex;
+  justify-content: center;   /* ⭐ center horizontally */
+  align-items: center;       /* ⭐ center vertically (just in case) */
+  padding-top: 10px;
+}
+
+.career-btn:hover {
+  background: #0953b9;
+  transform: translateY(-2px);
+}
+
+/* If using <Link> to wrap whole card */
+a.career-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;   /* IMPORTANT FIX */
+}
+/* Title icon spacing */
+.career-title i {
+  margin-right: 8px;
+  color: white;
+}
+
+/* Subtitle icon spacing */
+.career-subtitle i {
+  margin-right: 8px;
+}
+
+/* Course list icon spacing */
+.career-course-list li i {
+  margin-right: 8px;
+}
+.career-course-list {
+  color: #cbd5e1;
+}

@@ -1,0 +1,56 @@
+.coding-page {
+  padding-bottom: 90px; /* leave space for footer bar */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  background: #000;
+  min-height: 100vh;
+}
+
+.coding-prompt {
+  color: #cbd5e1;
+  font-size: 16px;
+  margin-top: 10px;
+  line-height: 1.8;
+}
+
+/* ✅ Monaco container: fixed height + no overflow rules here */
+.coding-editor-box {
+  height: 60vh;
+  margin-top: 14px;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  overflow: hidden; /* keep rounded corners */
+  background: #0f172a;
+}
+
+
+
+/* ✅ Tell browser: do not "chain scroll" to page while inside editor (helps a lot) */
+.coding-editor-box .monaco-scrollable-element {
+  overscroll-behavior: contain;
+}
+
+.coding-preview {
+  margin-top: 16px;
+}
+
+.coding-preview-title {
+  color: #e2e8f0;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.coding-iframe {
+  width: 100%;
+  height: 260px;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+  background: white;
+}
+
+.coding-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}

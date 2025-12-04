@@ -1,0 +1,172 @@
+.course-detail-page {
+  background: #05070b;
+  min-height: 100vh;
+  color: #e6e6e6;
+  padding: 40px 0;
+}
+
+.cd-container {
+  max-width: 1000px;
+}
+
+/* TITLE */
+.cd-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* DESCRIPTION BOX */
+.cd-desc-box {
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  padding: 16px 18px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* STATS */
+.cd-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 32px;
+}
+
+.cd-stat-box {
+  flex: 1 1 120px;
+  min-width: 120px;
+  background: #020617;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  padding: 10px 12px;
+}
+
+.cd-stat-label {
+  display: block;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.cd-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* SYLLABUS */
+.cd-syllabus-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.cd-syllabus-box {
+  background: #020617;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  padding: 10px;
+}
+
+/* Accordion overrides */
+.cd-syllabus-box .accordion-item {
+  background: transparent;
+  border: 1px solid #111827;
+  margin-bottom: 6px;
+}
+
+.cd-syllabus-box .accordion-button {
+  background: #0b1120;
+  color: #e5e7eb;
+}
+
+.cd-syllabus-box .accordion-button:not(.collapsed) {
+  background: #111827;
+  color: #f9fafb;
+  box-shadow: none;
+}
+
+.cd-syllabus-box .accordion-body {
+  background: #020617;
+  padding: 10px 16px;
+}
+
+/* Unit header */
+.cd-unit-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cd-unit-index {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #0f766e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cd-unit-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cd-unit-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cd-unit-meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Lessons */
+.cd-lesson-row {
+  border-bottom: 1px solid #111827;
+  padding: 8px 0;
+}
+
+.cd-lesson-row:last-child {
+  border-bottom: none;
+}
+
+.cd-lesson-empty {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.cd-lesson-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cd-lesson-title {
+  font-size: 14px;
+}
+
+.cd-lesson-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #fbbf24;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cd-title {
+    font-size: 22px;
+  }
+
+  .cd-stats-row {
+    flex-direction: column;
+  }
+}

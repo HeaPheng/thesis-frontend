@@ -1,0 +1,23 @@
+{
+  "hero_title": "Welcome to the Learning Platform",
+  "hero_subtitle": "Learn coding step-by-step in English or Khmer.",
+  "browse_courses": "Browse Courses",
+  "career_paths": "Career Paths",
+  "create_account": "Create Your Account ✨",
+  "full_name": "Full Name",
+  "email": "Email Address",
+  "password": "Password",
+  "register": "Register",
+  "already_account": "Already have an account?",
+  "login": "Login",
+  "explore_courses": "Explore Our Courses",
+  "react_course": "React for Beginners",
+  "react_desc": "Learn React step-by-step with practical projects.",
+  "html_course": "HTML & CSS Mastery",
+  "html_desc": "Master front-end basics with clean layout techniques.",
+  "js_course": "JavaScript Essentials",
+  "js_desc": "Understand JavaScript with simple and clear lessons.",
+  "view_all_courses": "View All Courses",
+  "view_all_careers": "View All Careers"
+  
+}

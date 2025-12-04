@@ -1,0 +1,206 @@
+/* TipDetail.css */
+.tipdetail-page {
+  background: #000;
+  min-height: 100vh;
+  padding-top: 90px;
+  padding-bottom: 80px;
+}
+
+.tipdetail-container {
+  max-width: 1100px;
+}
+
+.tipdetail-back {
+  color: #38bdf8;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+/* ✅ NEW layout */
+.tipdetail-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* Sidebar */
+.tipdetail-sidebar {
+  position: sticky;
+  top: 90px; /* navbar height */
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.tipdetail-side-title {
+  color: #e2e8f0;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+  opacity: 0.9;
+}
+
+.tipdetail-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tipdetail-side-item {
+  text-align: left;
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  color: #cbd5e1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.tipdetail-side-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.tipdetail-side-item.active {
+  color: #e6f6ff;
+  border-color: rgba(56, 189, 248, 0.9);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+/* Main */
+.tipdetail-main {
+  min-width: 0;
+}
+
+.tipdetail-head {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.tipdetail-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tipdetail-chip {
+  font-size: 12px;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.tipdetail-date {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.tipdetail-title {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.tipdetail-summary {
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.7;
+}
+
+.tipdetail-body {
+  margin-top: 16px;
+}
+
+.tipdetail-section {
+  scroll-margin-top: 95px; /* ✅ makes anchor scroll stop below navbar */
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.tipdetail-section h3 {
+  color: #fff;
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+
+.tipdetail-section p {
+  color: #cbd5e1;
+  margin: 0 0 10px;
+  line-height: 1.8;
+}
+
+.tipdetail-code {
+  background: #0a0f1f;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 14px;
+  color: #7dd3fc;
+  overflow-x: auto;
+  margin: 0;
+}
+
+/* Cover image (optional per tip) */
+.tipdetail-cover {
+  margin-top: 14px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.tipdetail-cover img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Section image (optional per section) */
+.tipdetail-section-image {
+  margin: 12px 0 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.tipdetail-section-image img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.tipdetail-caption {
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #94a3b8;
+  font-size: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+/* Mobile */
+@media (max-width: 992px) {
+  .tipdetail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tipdetail-sidebar {
+    position: relative;
+    top: 0;
+  }
+}
