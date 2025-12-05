@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { lessonsData } from "../../data/lessons";
 import Editor from "@monaco-editor/react";
 import "../Lessons/LessonPage.css";
 import "./CodingPage.css";
+import { canOpenCoding, unlockCoding } from "../../utils/progress";
 
 export default function CodingPage() {
   const { courseId, unitId } = useParams();
@@ -22,6 +23,7 @@ export default function CodingPage() {
     }
   }, [timeKey]);
 
+  // ✅ helper: persist time (so it keeps accumulating)
   const saveTime = () => {
     const current = JSON.parse(localStorage.getItem(timeKey) || "{}");
     const startedAt = Number(current.startedAt || Date.now());
@@ -36,19 +38,18 @@ export default function CodingPage() {
     return Math.max(1, minutes);
   };
 
-  // footer burger
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
     function handleClick(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setOpenMenu(false);
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setOpenMenu(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // load course/unit
   const numericCourseId = Number(courseId);
   const course = lessonsData.find((c) => Number(c.id) === numericCourseId);
 
@@ -60,36 +61,56 @@ export default function CodingPage() {
   const exercise = exercises[0];
 
   const [code, setCode] = useState(exercise?.starterCode || "");
+  useEffect(() => setCode(exercise?.starterCode || ""), [exercise?.starterCode]);
 
+  // ✅ ORDER GUARD: Coding locked until LAST lesson unlocked
   useEffect(() => {
-    setCode(exercise?.starterCode || "");
-  }, [exercise?.starterCode]);
+    if (!unit?.lessons?.length) return;
 
-  const handleEditorMount = useCallback((editor) => {
-    // optional: keep if you want later (run code, format code, etc.)
-  }, []);
+    const lastLessonIndex = unit.lessons.length - 1;
+    const ok = canOpenCoding(courseId, unitId, unitIndex, lastLessonIndex);
 
-  if (!course) return <h2 style={{ padding: 40, color: "white" }}>Course not found</h2>;
-  if (!unit) return <h2 style={{ padding: 40, color: "white" }}>Unit not found</h2>;
-  if (!exercise) return <h2 style={{ padding: 40, color: "white" }}>No coding exercise for this unit</h2>;
+    if (!ok) {
+      const firstLessonId = unit.lessons[0]?.id;
+      if (firstLessonId) {
+        navigate(`/course/${courseId}/unit/${unitId}/lesson/${firstLessonId}`, {
+          replace: true,
+        });
+      }
+    }
+  }, [courseId, unitId, unit, unitIndex, navigate]);
+
+  if (!course)
+    return <h2 style={{ padding: 40, color: "white" }}>Course not found</h2>;
+  if (!unit)
+    return <h2 style={{ padding: 40, color: "white" }}>Unit not found</h2>;
+  if (!exercise)
+    return (
+      <h2 style={{ padding: 40, color: "white" }}>
+        No coding exercise for this unit
+      </h2>
+    );
+
+  // ✅ Go to QCM: mark coding as done (this unlocks QCM), then navigate
+  const goQCM = () => {
+    saveTime();
+    unlockCoding(courseId, unitId); // ✅ QCM guard expects codingUnlocked === true
+    navigate(`/course/${courseId}/unit/${unitId}/qcm`);
+  };
 
   return (
     <div className="lesson-page coding-page">
-      {/* HEADER */}
       <div className="lesson-header">
         <code>{`import Coding from '${course.title} - ${unit.title}'`}</code>
       </div>
 
-      {/* CONTENT */}
       <div className="lesson-content-wrapper">
         <div className="lesson-content coding-content">
           <h2 className="qcm-title">{exercise.title}</h2>
           <p className="coding-prompt">{exercise.prompt}</p>
 
-          {/* EDITOR */}
           <div className="coding-editor-box">
             <Editor
-              onMount={handleEditorMount}
               height="60vh"
               theme="vs-dark"
               defaultLanguage={exercise.language || "html"}
@@ -101,13 +122,10 @@ export default function CodingPage() {
                 scrollBeyondLastLine: false,
                 wordWrap: "on",
                 automaticLayout: true,
-                scrollbar: { alwaysConsumeMouseWheel: false },
-                mouseWheelScrollSensitivity: 1,
               }}
             />
           </div>
 
-          {/* LIVE PREVIEW */}
           <div className="coding-preview">
             <div className="coding-preview-title">Preview</div>
             <iframe
@@ -118,22 +136,14 @@ export default function CodingPage() {
             />
           </div>
 
-          {/* ACTIONS */}
           <div className="coding-actions">
-            <button
-              className="qcm-btn-primary"
-              onClick={() => {
-                saveTime();
-                navigate(`/course/${courseId}/unit/${unitId}/qcm`);
-              }}
-            >
+            <button className="qcm-btn-primary" onClick={goQCM} type="button">
               Go to Quiz →
             </button>
           </div>
         </div>
       </div>
 
-      {/* FOOTER */}
       <div className="lesson-footer-bar">
         <div className="lf-left">
           <button
@@ -142,12 +152,17 @@ export default function CodingPage() {
               saveTime();
               navigate(`/courses/${courseId}`);
             }}
+            type="button"
           >
             <i className="bi bi-house"></i>
           </button>
 
           <div className="dropdown-container" ref={menuRef}>
-            <button className="lf-btn" onClick={() => setOpenMenu(!openMenu)}>
+            <button
+              className="lf-btn"
+              onClick={() => setOpenMenu(!openMenu)}
+              type="button"
+            >
               <i className="bi bi-list"></i>
             </button>
 
@@ -156,7 +171,11 @@ export default function CodingPage() {
                 <h4>{unit.title} • Coding</h4>
                 <ul>
                   <li>
-                    <button className="qcm-jump-btn" onClick={() => setOpenMenu(false)}>
+                    <button
+                      className="qcm-jump-btn"
+                      onClick={() => setOpenMenu(false)}
+                      type="button"
+                    >
                       {exercise.title}
                     </button>
                   </li>
@@ -165,9 +184,9 @@ export default function CodingPage() {
                       className="qcm-jump-btn"
                       onClick={() => {
                         setOpenMenu(false);
-                        saveTime();
-                        navigate(`/course/${courseId}/unit/${unitId}/qcm`);
+                        goQCM();
                       }}
+                      type="button"
                     >
                       Go to Quiz
                     </button>
@@ -177,26 +196,17 @@ export default function CodingPage() {
             )}
           </div>
 
-          <button className="lf-unit-title">{unit.title} • Coding</button>
+          <button className="lf-unit-title" type="button">
+            {unit.title} • Coding
+          </button>
         </div>
 
         <div className="lf-right">
           <span className="lf-count">Coding Exercise</span>
-          <button
-            className="lf-nav"
-            onClick={() => {
-              saveTime();
-              navigate(`/course/${courseId}/unit/${unitId}/qcm`);
-            }}
-          >
+          <button className="lf-nav" onClick={goQCM} type="button">
             Next →
           </button>
         </div>
-      </div>
-
-      {/* PROGRESS */}
-      <div className="lesson-progress-bar">
-        <div className="lesson-progress-fill" style={{ width: "66%" }}></div>
       </div>
     </div>
   );

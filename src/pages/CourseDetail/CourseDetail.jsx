@@ -1,10 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Container, Accordion } from "react-bootstrap";
 import courses from "../../data/courses";
 import { lessonsData } from "../../data/lessons";
 import CertificateModal from "../../components/CertificateModal";
 import "./CourseDetail.css";
+import {
+  canOpenLesson,
+  canOpenCoding,
+  canOpenQCM,
+  unlockUnit,
+  unlockLesson,
+} from "../../utils/progress";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -14,33 +21,43 @@ const CourseDetail = () => {
   const [showCert, setShowCert] = useState(false);
   const [spentMinutes, setSpentMinutes] = useState(0);
 
-  // Find course in courses.js
   const course = useMemo(
     () => courses.find((c) => c.id === parseInt(id)),
     [id]
   );
 
+  const courseLessons = useMemo(() => {
+    if (!course) return null;
+    return lessonsData.find((item) => Number(item.id) === Number(course.id)) || null;
+  }, [course]);
+
+  const units = useMemo(() => {
+    return courseLessons?.content?.units || [];
+  }, [courseLessons]);
+
   const userName = localStorage.getItem("userName") || "Student";
 
+  // ✅ certificate popup (safe hook position)
   useEffect(() => {
-    // ✅ If we came back with completion state, open certificate popup
     if (location.state?.completed) {
       setSpentMinutes(Number(location.state?.timeSpentMinutes || 0));
       setShowCert(true);
-
-      // ✅ clear state so refresh doesn't show again
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, location.pathname, navigate]);
 
-  if (!course) {
-    return <h2 className="text-center mt-5">Course not found</h2>;
-  }
+  // ✅ always ensure: Unit 1 + Lesson 1 are unlocked (safe, not conditional)
+  useEffect(() => {
+    if (!course?.id) return;
+    if (!units.length) return;
 
-  // Find lessons in lessonsData ARRAY
-  const courseLessons = lessonsData.find(
-    (item) => Number(item.id) === Number(course.id)
-  );
+    const firstUnitId = String(units[0].id);
+    unlockUnit(String(course.id), firstUnitId);
+    unlockLesson(String(course.id), firstUnitId, 0);
+  }, [course?.id, units]);
+
+  // ---------- EARLY RETURNS (AFTER hooks) ----------
+  if (!course) return <h2 className="text-center mt-5">Course not found</h2>;
 
   if (!courseLessons || !courseLessons.content) {
     return (
@@ -67,7 +84,18 @@ const CourseDetail = () => {
     );
   }
 
-  const units = courseLessons.content.units;
+  // ---------- navigation helpers ----------
+  const goLesson = (unitId, lessonId) => {
+    navigate(`/course/${course.id}/unit/${unitId}/lesson/${lessonId}`);
+  };
+
+  const goQCM = (unitId) => {
+    navigate(`/course/${course.id}/unit/${unitId}/qcm`);
+  };
+
+  const goCoding = (unitId) => {
+    navigate(`/course/${course.id}/unit/${unitId}/coding`);
+  };
 
   return (
     <div className="course-detail-page">
@@ -108,55 +136,119 @@ const CourseDetail = () => {
 
         <div className="cd-syllabus-box">
           <Accordion alwaysOpen>
-            {units.map((unit, index) => (
-              <Accordion.Item eventKey={String(index)} key={unit.id}>
-                <Accordion.Header>
-                  <div className="cd-unit-header">
-                    <div className="cd-unit-index">{index + 1}</div>
-                    <div className="cd-unit-text">
-                      <div className="cd-unit-title">{unit.title}</div>
-                      <div className="cd-unit-meta">
-                        {unit.lessons.length} lessons • {unit.qcm.length} QCM
+            {units.map((unit, unitIndex) => {
+              const hasCoding = !!(unit?.coding && unit.coding.length > 0);
+              const lastLessonIndex = (unit?.lessons?.length || 1) - 1;
+
+              const codingUnlocked = canOpenCoding(
+                String(course.id),
+                unit.id,
+                unitIndex,
+                lastLessonIndex
+              );
+
+              const quizUnlocked = canOpenQCM(
+                String(course.id),
+                unit.id,
+                unitIndex,
+                hasCoding,
+                lastLessonIndex
+              );
+
+              return (
+                <Accordion.Item eventKey={String(unitIndex)} key={unit.id}>
+                  <Accordion.Header>
+                    <div className="cd-unit-header">
+                      <div className="cd-unit-index">{unitIndex + 1}</div>
+                      <div className="cd-unit-text">
+                        <div className="cd-unit-title">{unit.title}</div>
+                        <div className="cd-unit-meta">
+                          {unit.lessons.length} lessons • {unit.qcm.length} QCM
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Accordion.Header>
+                  </Accordion.Header>
 
-                <Accordion.Body>
-                  {unit.lessons.map((lesson) => (
-                    <div className="cd-lesson-row" key={lesson.id}>
+                  <Accordion.Body>
+                    {unit.lessons.map((lesson, lessonIndex) => {
+                      const unlocked = canOpenLesson(
+                        String(course.id),
+                        unit.id,
+                        unitIndex,
+                        lessonIndex
+                      );
+
+                      return (
+                        <div className="cd-lesson-row" key={lesson.id}>
+                          <div className="cd-lesson-info">
+                            <button
+                              type="button"
+                              className={`cd-lesson-title-btn ${
+                                !unlocked ? "is-locked" : ""
+                              }`}
+                              onClick={() => unlocked && goLesson(unit.id, lesson.id)}
+                              disabled={!unlocked}
+                            >
+                              <i className="bi bi-play-fill cd-open-icon"></i>
+                              {lesson.title}
+                            </button>
+
+                            <div className={`cd-lesson-meta ${unlocked ? "" : "locked"}`}>
+                              {unlocked ? "Open" : "Locked 🔒"}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {hasCoding && (
+                      <div className="cd-lesson-row qcm-row">
+                        <div className="cd-lesson-info">
+                          <button
+                            type="button"
+                            className={`cd-lesson-title-btn ${
+                              !codingUnlocked ? "is-locked" : ""
+                            }`}
+                            onClick={() => codingUnlocked && goCoding(unit.id)}
+                            disabled={!codingUnlocked}
+                          >
+                            <i className="bi bi-code-slash cd-open-icon"></i>
+                            Coding Exercise
+                          </button>
+
+                          <div className={`cd-lesson-meta ${codingUnlocked ? "" : "locked"}`}>
+                            {codingUnlocked ? "Open" : "Locked 🔒"}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="cd-lesson-row qcm-row">
                       <div className="cd-lesson-info">
-                        <Link
-                          to={`/course/${course.id}/unit/${unit.id}/lesson/${lesson.id}`}
-                          className="cd-lesson-title"
+                        <button
+                          type="button"
+                          className={`cd-lesson-title-btn ${
+                            !quizUnlocked ? "is-locked" : ""
+                          }`}
+                          onClick={() => quizUnlocked && goQCM(unit.id)}
+                          disabled={!quizUnlocked}
                         >
-                          <i className="bi bi-play-fill cd-open-icon"></i>
-                          {lesson.title}
-                        </Link>
-                        <div className="cd-lesson-meta">Open</div>
+                          <i className="bi bi-question-circle cd-open-icon"></i>
+                          QCM Quiz ({unit.qcm.length} questions)
+                        </button>
+
+                        <div className={`cd-lesson-meta ${quizUnlocked ? "" : "locked"}`}>
+                          {quizUnlocked ? "Quiz" : "Locked 🔒"}
+                        </div>
                       </div>
                     </div>
-                  ))}
-
-                  <div className="cd-lesson-row qcm-row">
-                    <div className="cd-lesson-info">
-                      <Link
-                        to={`/course/${course.id}/unit/${unit.id}/qcm`}
-                        className="cd-lesson-title"
-                      >
-                        <i className="bi bi-question-circle cd-open-icon"></i>
-                        QCM Quiz ({unit.qcm.length} questions)
-                      </Link>
-                      <div className="cd-lesson-meta">Quiz</div>
-                    </div>
-                  </div>
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
+                  </Accordion.Body>
+                </Accordion.Item>
+              );
+            })}
           </Accordion>
         </div>
 
-        {/* ✅ Completion Modal */}
         <CertificateModal
           show={showCert}
           onHide={() => setShowCert(false)}

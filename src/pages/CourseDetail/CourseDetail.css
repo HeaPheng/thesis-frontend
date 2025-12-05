@@ -170,3 +170,24 @@
     flex-direction: column;
   }
 }
+.cd-lesson-title-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  color: white;
+}
+
+.cd-lesson-title-btn.is-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cd-lesson-meta.locked {
+  color: #94a3b8;
+}

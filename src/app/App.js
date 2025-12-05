@@ -12,6 +12,7 @@ function App() {
       <AppRoutes lang={lang} setLang={setLang} />
     </>
   );
+  
 }
 
 export default App;
