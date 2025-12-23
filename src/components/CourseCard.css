@@ -1,17 +1,17 @@
 /* =========================
-   PREMIUM COURSE CARD (COMPACT)
+   PREMIUM COURSE CARD (COMPACT + ALIGNED)
 ========================= */
 
 .course-card {
   width: 100%;
-  border-radius: 18px !important; /* ✅ smaller */
+  border-radius: 18px !important;
   overflow: hidden;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.96) !important;
   border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow:
     0 12px 28px rgba(0, 0, 0, 0.18),
-    0 2px 0 rgba(255, 255, 255, 0.30) inset; /* ✅ slightly lighter */
+    0 2px 0 rgba(255, 255, 255, 0.30) inset;
   transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
   display: flex;
   flex-direction: column;
@@ -19,18 +19,22 @@
 }
 
 .course-card:hover {
-  transform: translateY(-6px); /* ✅ less jump */
+  transform: translateY(-6px);
   border-color: rgba(59, 130, 246, 0.55);
   box-shadow:
     0 18px 44px rgba(0, 0, 0, 0.24),
-    0 0 0 5px rgba(59, 130, 246, 0.10); /* ✅ smaller glow */
+    0 0 0 5px rgba(59, 130, 246, 0.10);
 }
 
 /* Image area */
 .course-img-wrapper {
-  height: 170px; /* ✅ smaller image (was 220) */
+  position: relative;              /* ✅ needed for ::after overlay */
+  width: 100%;
+  aspect-ratio: 16 / 8;
   overflow: hidden;
-  position: relative;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  background: #0f172a;
 }
 
 /* subtle top gradient (premium feel) */
@@ -51,58 +55,71 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
   transform: scale(1.01);
-  transition: transform .35s ease;
+  transition: transform .22s ease;
 }
 
 .course-card:hover .course-img {
-  transform: scale(1.08); /* ✅ less zoom */
+  transform: scale(1.06);
 }
 
 /* Content */
 .course-body {
-  padding: 14px 14px 12px; /* ✅ tighter */
+  padding: 12px 14px 12px;         /* ✅ slightly smaller */
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;             /* ✅ align nicely */
+  text-align: center;              /* ✅ align text */
   background-color: #0b1220;
+  gap: 8px;
 }
 
 .course-title {
-  font-size: 18px; /* ✅ smaller */
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.2px;
-  margin: 2px 0 6px;
+  margin: 2px 0 0;
   color: rgb(59 130 246);
   text-align: center;
+  line-height: 1.2;
 }
 
+/* ✅ 3-line clamp (fixed) */
 .course-description {
   color: #ffffff;
-  font-size: 13.5px; /* ✅ slightly smaller */
+  font-size: 13.25px;
   line-height: 1.5;
-
-  /* keep cards equal height, but less tall */
-  min-height: 54px; /* ✅ was 64 */
-  max-height: 54px;
-  overflow: hidden;
-  margin: 0 0 8px;
+  margin: 0;
   text-align: center;
-  flex-grow: 1;
+
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  /* ✅ fix long unbroken text */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 /* tags */
 .course-tags {
+  width: 100%;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 6px 0 8px;
+  justify-content: center;         /* ✅ center tags */
+  margin: 2px 0 0;
 }
 
 .course-tag {
   font-size: 12px;
-  font-weight: 600;
-  padding: 5px 10px; /* ✅ slimmer */
+  font-weight: 700;
+  padding: 5px 10px;
   border-radius: 999px;
   color: #0b1220;
   background: rgba(2, 6, 23, 0.04);
@@ -111,14 +128,16 @@
 
 /* Read more link */
 .read-more {
-  font-size: 13.5px;
+  width: 100%;
+  font-size: 13px;
   font-weight: 800;
-  color: #2563eb;
+  color: #60a5fa;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;     /* ✅ left aligned on purpose */
   gap: 6px;
-  margin-bottom: 8px;
+  margin-top: 2px;
 }
 
 .read-more:hover {
@@ -127,27 +146,42 @@
 
 /* Meta row */
 .course-meta {
+  width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between;  /* ✅ clean left/right */
+  align-items: center;
   gap: 10px;
   font-size: 13px;
   color: #ffffff;
-  margin-bottom: 10px;
-  padding-top: 8px;
+  margin-top: 4px;
+  padding-top: 15px;
   border-top: 1px dashed rgba(148, 163, 184, 0.55);
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.course-meta > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Exercise info pill */
 .exercise-info {
-  font-size: 12.8px; /* ✅ smaller */
+  width: 100%;
+  font-size: 12.6px;
   font-weight: 800;
   color: #ffffff;
   background: linear-gradient(180deg, rgba(59,130,246,0.10), rgba(59,130,246,0.05));
   border: 1px solid rgba(59, 130, 246, 0.22);
-  padding: 8px 10px; /* ✅ slimmer */
-  border-radius: 12px; /* ✅ smaller */
+  padding: 8px 10px;
+  border-radius: 12px;
   text-align: center;
-  margin-bottom: 12px;
+  margin-top: 2px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px !important;
+  margin-bottom: 5px;
 }
 
 /* Footer */
@@ -161,22 +195,26 @@
 .exercise-btn {
   width: 100%;
   font-weight: 800;
-  border-radius: 12px !important; /* ✅ smaller */
+  border-radius: 12px !important;
   border: 1px solid rgba(255,255,255,0.25) !important;
-  padding: 10px 0; /* ✅ slimmer */
+  padding: 9px 0;                  /* ✅ smaller */
   background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 55%, #22c55e 155%) !important;
-  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.22); /* ✅ smaller */
+  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.20);
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
 
 .exercise-btn:hover {
   transform: translateY(-2px);
   filter: brightness(1.02);
-  box-shadow: 0 16px 28px rgba(37, 99, 235, 0.28);
+  box-shadow: 0 14px 24px rgba(37, 99, 235, 0.26);
 }
 
-/* Make everything comfy on small screens */
+/* Mobile: keep it compact */
 @media (max-width: 520px) {
-  .course-img-wrapper { height: 155px; } /* ✅ smaller */
-  .course-body { padding: 12px; }
+  .course-img-wrapper {
+    aspect-ratio: 4 / 3;           /* ✅ better on phones */
+  }
+  .course-body {
+    padding: 12px;
+  }
 }

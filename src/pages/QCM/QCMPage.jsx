@@ -1,40 +1,43 @@
-import React, { useState, useEffect, useRef } from "react";
+// QCMPage.jsx (FULL FIXED + MODIFIED)
+// ✅ Works with lesson-based route: /course/:courseId/unit/:unitId/qcm/:lessonId
+// ✅ Uses slug-based courseKey (courseId is slug)
+// ✅ NO auto-enroll (matches your CourseDetail behavior)
+// ✅ Marks QCM as completed in DB (2 options: /progress/qcm/complete OR /progress/unit/quiz-passed fallback)
+// ✅ Updates resume pointer to "qcm" so Continue Learning can land on QCM
+// ✅ Fixes guard + back nav uses the :lessonId from URL
+// ✅ Keeps your UI + burger menu + footer
+
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { lessonsData } from "../../data/lessons";
 import "./QCMPage.css";
-import { canOpenLesson, canOpenQCM, unlockUnit, unlockLesson } from "../../utils/progress";
+import api from "../../lib/api";
 
 export default function QCMPage() {
-  const { courseId, unitId } = useParams();
+  // ✅ lesson-based route params
+  const { courseId, unitId, lessonId } = useParams();
   const navigate = useNavigate();
 
-  const timeKey = `course-time-${courseId}`;
-
+  // ✅ language
+  const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
   useEffect(() => {
-    const current = JSON.parse(localStorage.getItem(timeKey) || "{}");
-    if (!current.startedAt) {
-      localStorage.setItem(timeKey, JSON.stringify({ startedAt: Date.now(), minutes: 0 }));
-    }
-  }, [timeKey]);
+    const onLangChanged = (e) => {
+      const next = e?.detail?.lang;
+      if (next === "en" || next === "km") setLang(next);
+      else setLang(localStorage.getItem("app_lang") || "en");
+    };
+    window.addEventListener("app-lang-changed", onLangChanged);
+    return () => window.removeEventListener("app-lang-changed", onLangChanged);
+  }, []);
 
-  const saveTime = () => {
-    const current = JSON.parse(localStorage.getItem(timeKey) || "{}");
-    const startedAt = Number(current.startedAt || Date.now());
-    const minutesSaved = Number(current.minutes || 0);
-    const extra = Math.max(0, Math.round((Date.now() - startedAt) / 60000));
-    const minutes = minutesSaved + extra;
+  const pickText = useCallback(
+    (en, km) => (lang === "km" ? km || en || "" : en || km || ""),
+    [lang]
+  );
 
-    localStorage.setItem(timeKey, JSON.stringify({ startedAt: Date.now(), minutes }));
-    return Math.max(1, minutes);
-  };
-
-  const finishCourseWithCertificate = () => {
-    const mins = saveTime();
-    localStorage.removeItem(timeKey);
-    navigate(`/courses/${courseId}`, {
-      state: { completed: true, timeSpentMinutes: mins },
-    });
-  };
+  // ✅ consistent keys
+  const courseKey = useMemo(() => String(courseId || ""), [courseId]); // slug
+  const unitIdNum = Number(unitId);
+  const lessonIdNum = Number(lessonId);
 
   // ======= FOOTER BURGER MENU =======
   const [openMenu, setOpenMenu] = useState(false);
@@ -48,292 +51,570 @@ export default function QCMPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // ======= QUIZ STATE =======
-  const [index, setIndex] = useState(0);
-  const [selected, setSelected] = useState("");
-  const [answers, setAnswers] = useState([]);
-  const [finished, setFinished] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
-  const [reviewMode, setReviewMode] = useState("prompt");
+  const markProgressDirty = useCallback(() => {
+    try {
+      localStorage.setItem("progress_dirty", "1");
+      localStorage.setItem("progress_dirty_course", String(courseKey));
+      window.dispatchEvent(new Event("progress-dirty"));
+    } catch { }
+  }, [courseKey]);
 
-  // ======= LOAD DATA =======
-  const numericCourseId = Number(courseId);
-  const course = lessonsData.find((c) => Number(c.id) === numericCourseId);
+  // ======= API DATA =======
+  const [course, setCourse] = useState(null);
+  const [loadingCourse, setLoadingCourse] = useState(false);
 
-  const units = course?.content?.units || [];
-  const currentUnitIndex = units.findIndex((u) => u.id === unitId);
+  const [quiz, setQuiz] = useState(null);
+  const [loadingQuiz, setLoadingQuiz] = useState(true);
+
+  // enrollment + progress from DB
+  const [enrollCheckLoading, setEnrollCheckLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
+  const [progressLoading, setProgressLoading] = useState(false);
+  const [completedLessonIds, setCompletedLessonIds] = useState(() => new Set());
+  const [unitProgressMap, setUnitProgressMap] = useState({});
+
+  // ✅ 0) enrollment check (NO auto-enroll)
+  useEffect(() => {
+    try {
+      localStorage.setItem(`resume_type_v1:${courseKey}`, "qcm");
+      localStorage.setItem(`resume_unit_v1:${courseKey}`, String(unitIdNum));
+    } catch { }
+  }, [courseKey, unitIdNum]);
+
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      if (!courseKey) return;
+
+      setEnrollCheckLoading(true);
+      try {
+        await api.get(`/progress/course/${courseKey}`);
+        if (!alive) return;
+        setIsEnrolled(true);
+      } catch {
+        if (!alive) return;
+        setIsEnrolled(false);
+      } finally {
+        if (alive) setEnrollCheckLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [courseKey]);
+
+  // ======= 1) quiz by UNIT =======
+  useEffect(() => {
+    if (!unitIdNum) return;
+
+    let alive = true;
+    setLoadingQuiz(true);
+
+    api
+      .get(`/units/${unitIdNum}/quiz`)
+      .then((res) => {
+        if (!alive) return;
+        setQuiz(res.data || null);
+      })
+      .catch((err) => {
+        console.error("Failed to load quiz:", err);
+        if (!alive) return;
+        setQuiz(null);
+      })
+      .finally(() => {
+        if (!alive) return;
+        setLoadingQuiz(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [unitIdNum]);
+
+  // ======= 2) fetch course (for titles + next unit) =======
+  useEffect(() => {
+    if (!courseKey) return;
+
+    let alive = true;
+    setLoadingCourse(true);
+
+    api
+      .get(`/courses/${courseKey}`)
+      .then((res) => {
+        if (!alive) return;
+        setCourse(res.data || null);
+      })
+      .catch((err) => {
+        console.error("Failed to load course:", err);
+        if (!alive) return;
+        setCourse(null);
+      })
+      .finally(() => {
+        if (!alive) return;
+        setLoadingCourse(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [courseKey]);
+
+  const units = useMemo(() => (Array.isArray(course?.units) ? course.units : []), [course]);
+
+  const currentUnitIndex = useMemo(
+    () => units.findIndex((u) => Number(u.id) === unitIdNum),
+    [units, unitIdNum]
+  );
   const unit = currentUnitIndex >= 0 ? units[currentUnitIndex] : null;
 
-  const questions = unit?.qcm || [];
-  const total = questions.length;
-  const current = questions[index];
+  const hasCoding = useMemo(() => {
+    // support both new/old shapes
+    const up = unitProgressMap?.[String(unitIdNum)];
+    const hasCodingFlag = !!(unit?.codingExerciseEn || unit?.coding_exercise_en || unit?.codingExercise || unit?.coding_exercise);
+    const hasCodingArray = !!(unit?.coding && Array.isArray(unit.coding) && unit.coding.length > 0);
+    // prefer course/unit structure; progress map only for "completed" flags
+    return hasCodingFlag || hasCodingArray || !!up?.has_coding;
+  }, [unit, unitIdNum, unitProgressMap]);
 
-  // ✅ ORDER GUARD (with your new signature)
+  // ✅ fallback lesson for "Back" if lessonId not in URL
+  const lastLessonId = useMemo(() => {
+    const list = unit?.lessons || [];
+    return list.length ? list[list.length - 1]?.id : null;
+  }, [unit]);
+
+  const fallbackLessonId = useMemo(() => {
+    return lessonIdNum || lastLessonId || unit?.lessons?.[0]?.id || null;
+  }, [lessonIdNum, lastLessonId, unit]);
+
+  // ✅ refresh progress (ONLY if enrolled)
+  const refreshProgress = useCallback(async () => {
+    if (!courseKey || !isEnrolled) return;
+
+    setProgressLoading(true);
+    try {
+      const { data } = await api.get(`/progress/course/${courseKey}`);
+      const ids = Array.isArray(data?.completed_lesson_ids) ? data.completed_lesson_ids : [];
+      setCompletedLessonIds(new Set(ids.map((x) => Number(x))));
+      setUnitProgressMap(data?.unit_progress || {});
+    } catch (e) {
+      console.error("Failed to load course progress:", e);
+    } finally {
+      setProgressLoading(false);
+    }
+  }, [courseKey, isEnrolled]);
+
   useEffect(() => {
+    if (!isEnrolled) return;
+    refreshProgress();
+  }, [isEnrolled, refreshProgress]);
+
+  // ✅ keep resume pointer on QCM (so Continue Learning can land here)
+  useEffect(() => {
+    if (!courseKey || !unitIdNum) return;
+    if (!isEnrolled) return;
+
+    api
+      .post(`/progress/course/${courseKey}/resume`, {
+        unit_id: Number(unitIdNum),
+        lesson_id: Number(fallbackLessonId || 0),
+        type: "qcm", // ✅ important
+      })
+      .catch(() => { });
+  }, [courseKey, unitIdNum, fallbackLessonId, isEnrolled]);
+
+  // ======= QUIZ DATA (supports multiple shapes) =======
+  const questions = useMemo(() => {
+    const data = quiz || {};
+    const qs =
+      Array.isArray(data?.questions)
+        ? data.questions
+        : Array.isArray(data?.quiz?.questions)
+          ? data.quiz.questions
+          : Array.isArray(data?.data?.questions)
+            ? data.data.questions
+            : Array.isArray(data?.questions?.data)
+              ? data.questions.data
+              : [];
+    return [...qs].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.id ?? 0) - (b.id ?? 0));
+  }, [quiz]);
+
+  const total = questions.length;
+
+  // ======= GUARDS =======
+  const isUnitCompleted = useCallback(
+    (unitIdStr) => !!unitProgressMap?.[String(unitIdStr)]?.completed,
+    [unitProgressMap]
+  );
+
+  const isLessonCompleted = useCallback((id) => completedLessonIds.has(Number(id)), [completedLessonIds]);
+
+  const canOpenUnit = useCallback(
+    (uIndex) => {
+      if (uIndex <= 0) return true;
+      const prevUnit = units[uIndex - 1];
+      if (!prevUnit) return false;
+      return isUnitCompleted(prevUnit.id);
+    },
+    [units, isUnitCompleted]
+  );
+
+  const canOpenQCMDB = useCallback(() => {
+    if (!isEnrolled) return false;
+    if (!unit?.lessons?.length) return false;
+    if (!canOpenUnit(currentUnitIndex)) return false;
+
+    const lessonsDone = unit.lessons.every((l) => isLessonCompleted(l.id));
+    if (!lessonsDone) return false;
+
+    if (hasCoding) {
+      const up = unitProgressMap?.[String(unit.id)];
+      return !!up?.coding_completed;
+    }
+    return true;
+  }, [isEnrolled, unit, canOpenUnit, currentUnitIndex, isLessonCompleted, hasCoding, unitProgressMap]);
+
+  useEffect(() => {
+    if (enrollCheckLoading) return;
+    if (!isEnrolled) {
+      navigate(`/courses/${courseKey}`, { replace: true });
+      return;
+    }
+
     if (!unit?.lessons?.length) return;
+    if (progressLoading) return;
+    if (loadingQuiz) return;
+    if (!quiz) return;
 
-    const hasCoding = !!(unit?.coding && unit.coding.length > 0);
-    const lastLessonIndex = unit.lessons.length - 1;
-
-    const ok = hasCoding
-      ? canOpenQCM(courseId, unitId, currentUnitIndex, hasCoding, lastLessonIndex)
-      : canOpenLesson(courseId, unitId, currentUnitIndex, lastLessonIndex);
-
+    const ok = canOpenQCMDB();
     if (!ok) {
-      const firstLessonId = unit.lessons[0]?.id;
-      if (firstLessonId) {
-        navigate(`/course/${courseId}/unit/${unitId}/lesson/${firstLessonId}`, { replace: true });
+      if (fallbackLessonId) {
+        navigate(`/course/${courseKey}/unit/${unitIdNum}/lesson/${Number(fallbackLessonId)}`, { replace: true });
+      } else {
+        navigate(`/courses/${courseKey}`, { replace: true });
       }
     }
-  }, [courseId, unitId, unit, currentUnitIndex, navigate]);
+  }, [
+    enrollCheckLoading,
+    isEnrolled,
+    unit,
+    progressLoading,
+    loadingQuiz,
+    quiz,
+    canOpenQCMDB,
+    fallbackLessonId,
+    navigate,
+    courseKey,
+    unitIdNum,
+  ]);
 
-  if (!course) return <h2 style={{ padding: 40, color: "white" }}>Course not found</h2>;
-  if (!unit) return <h2 style={{ padding: 40, color: "white" }}>Unit not found</h2>;
-  if (!total) return <h2 style={{ padding: 40, color: "white" }}>No QCM found for this unit</h2>;
+  // ======= QUIZ STATE =======
+  const [index, setIndex] = useState(0);
+  const [answersMap, setAnswersMap] = useState({});
+  const [showWarning, setShowWarning] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
 
-  // ====== SCORE / STATS ======
-  const correctCount = answers.filter((a) => a.isCorrect).length;
-  const percentage = total ? ((correctCount / total) * 100).toFixed(1) : "0.0";
+  useEffect(() => {
+    setIndex(0);
+    setAnswersMap({});
+    setShowWarning(false);
+    setSubmitting(false);
+    setResult(null);
+  }, [unitIdNum, total]);
 
-  let grade = "F";
-  if (Number(percentage) >= 90) grade = "A";
-  else if (Number(percentage) >= 80) grade = "B";
-  else if (Number(percentage) >= 70) grade = "C";
-  else if (Number(percentage) >= 60) grade = "D";
+  const current = questions[index];
 
-  const wrongAnswers = answers.filter((a) => !a.isCorrect);
+  const handleBack = () => {
+    if (result) {
+      setResult(null);
+      setShowWarning(false);
+      setIndex(Math.max(0, total - 1));
+      return;
+    }
 
-  // ======= SUBMIT HANDLER =======
-  const handleSubmit = () => {
-    if (!selected) {
+    if (index > 0) {
+      setIndex((v) => Math.max(0, v - 1));
+      setShowWarning(false);
+      return;
+    }
+
+    // ✅ Back to lesson that opened the quiz (route param)
+    if (fallbackLessonId) navigate(`/course/${courseKey}/unit/${unitIdNum}/lesson/${Number(fallbackLessonId)}`);
+    else navigate(`/courses/${courseKey}`);
+  };
+
+  // ✅ mark QCM completed in DB
+  const markQcmCompleteDB = useCallback(async () => {
+    if (!isEnrolled) return;
+
+    // Option A (recommended): dedicated endpoint
+    try {
+      await api.post("/progress/qcm/complete", { unit_id: Number(unitIdNum) });
+      markProgressDirty();
+      return true;
+    } catch (e) {
+      // Option B (fallback): your existing endpoint might already set qcm_completed
+      try {
+        await api.post("/progress/unit/quiz-passed", { unit_id: Number(unitIdNum) });
+        markProgressDirty();
+        return true;
+      } catch (e2) {
+        console.error("Failed to mark QCM complete:", e2);
+        return false;
+      }
+    }
+  }, [isEnrolled, unitIdNum, markProgressDirty]);
+
+  const handleNext = async () => {
+    if (!current) return;
+
+    const selectedOptionId = answersMap[current.id];
+    if (!selectedOptionId) {
       setShowWarning(true);
       return;
     }
     setShowWarning(false);
 
-    const isCorrect = selected === current.answer;
-
-    setAnswers((prev) => [
-      ...prev,
-      { question: current.question, selected, correct: current.answer, isCorrect },
-    ]);
-
     if (index + 1 < total) {
-      setIndex(index + 1);
-      setSelected("");
-    } else {
-      setFinished(true);
-      setReviewMode("prompt");
+      setIndex((v) => v + 1);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      // ✅ submit
+      const payload = { unit_id: Number(unitIdNum), answers: answersMap };
+      const res = await api.post(`/quiz/submit`, payload);
+
+      setResult(res.data);
+
+      const pct = Number(res?.data?.percent || 0);
+
+      if (pct >= 50) {
+        // ✅ mark qcm completed
+        await markQcmCompleteDB();
+
+        // ✅ set resume to next unit first lesson (optional)
+        const nextUnit = units[currentUnitIndex + 1];
+        const nextFirstLessonId = nextUnit?.lessons?.[0]?.id;
+
+        if (nextUnit?.id && nextFirstLessonId) {
+          api
+            .post(`/progress/course/${courseKey}/resume`, {
+              unit_id: Number(nextUnit.id),
+              lesson_id: Number(nextFirstLessonId),
+              type: "lesson",
+            })
+            .catch(() => { });
+        }
+      }
+
+      await refreshProgress();
+    } catch (e) {
+      console.error(e);
+      alert(pickText("Submit failed. Check API /quiz/submit.", "បញ្ជូនបរាជ័យ។ សូមពិនិត្យ API /quiz/submit."));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleRetry = () => {
     setIndex(0);
-    setSelected("");
-    setAnswers([]);
-    setFinished(false);
+    setAnswersMap({});
     setShowWarning(false);
-    setReviewMode("prompt");
+    setResult(null);
   };
 
-  // ✅ FLOW MODE (fix): go directly to NEXT unit lesson 1, not course detail
-  const goToNextUnit = () => {
-    saveTime();
+  const correctCount = Number(result?.score || 0);
+  const resultTotal = Number(result?.total || total || 0);
+  const percentage = resultTotal ? ((correctCount / resultTotal) * 100).toFixed(1) : "0.0";
 
+  const goToNextUnit = () => {
     const nextUnit = units[currentUnitIndex + 1];
 
-    // no more units => certificate
     if (!nextUnit) {
-      finishCourseWithCertificate();
+      navigate(`/courses/${courseKey}`, { state: { showCertificate: true } });
       return;
     }
-
-    // unlock next unit + lesson 0
-    unlockUnit(courseId, nextUnit.id);
-    unlockLesson(courseId, nextUnit.id, 0);
 
     const firstLessonId = nextUnit.lessons?.[0]?.id;
     if (!firstLessonId) {
-      // if somehow unit has no lessons, fallback to course detail
-      navigate(`/courses/${courseId}`);
+      navigate(`/courses/${courseKey}`, { state: { showCertificate: true } });
       return;
     }
 
-    // go straight to next unit lesson 1
-    navigate(`/course/${courseId}/unit/${nextUnit.id}/lesson/${firstLessonId}`);
+    navigate(`/course/${courseKey}/unit/${nextUnit.id}/lesson/${firstLessonId}`);
   };
 
-  const progressValue = finished ? 100 : ((index + 1) / total) * 100;
+  const progressValue = result ? 100 : total ? ((index + 1) / total) * 100 : 0;
+
+  // ---------- EARLY RETURNS ----------
+  if (enrollCheckLoading) {
+    return <h2 style={{ padding: 40, color: "white" }}>{pickText("Checking enrollment...", "កំពុងពិនិត្យការចុះឈ្មោះ...")}</h2>;
+  }
+
+  if (!isEnrolled) {
+    return <h2 style={{ padding: 40, color: "white" }}>{pickText("Not enrolled.", "មិនទាន់ចុះឈ្មោះទេ។")}</h2>;
+  }
+
+  if (loadingQuiz) {
+    return <h2 style={{ padding: 40, color: "white" }}>{pickText("Loading quiz...", "កំពុងផ្ទុកសំណួរ...")}</h2>;
+  }
+
+  if (!quiz) {
+    return <h2 style={{ padding: 40, color: "white" }}>{pickText("No QCM found for this unit", "មិនមានសំណួរសម្រាប់យូនីតនេះ")}</h2>;
+  }
+
+  if (total === 0) {
+    return (
+      <div style={{ padding: 40, color: "white" }}>
+        <h2>{pickText("Quiz loaded, but no questions were returned.", "បានផ្ទុកសំណួរ ប៉ុន្តែមិនមានសំណួរត្រឡប់មកវិញ។")}</h2>
+        <div style={{ marginTop: 10, opacity: 0.8 }}>
+          {pickText("Check DevTools → Network →", "ពិនិត្យ DevTools → Network →")}{" "}
+          <code>/units/{unitIdNum}/quiz</code>
+        </div>
+      </div>
+    );
+  }
+
+  const headerCourseTitle = pickText(course?.title || "Course", course?.title_km || "វគ្គសិក្សា");
+  const headerUnitTitle = pickText(unit?.title || `Unit ${unitId}`, unit?.title_km || `ជំពូក ${unitId}`);
+
+  const questionText = pickText(current?.question, current?.question_km);
+  const explanationText = pickText(current?.explanation, current?.explanation_km);
 
   return (
     <div className="lesson-page qcm-page">
       <div className="lesson-header">
-        <code>{`import Quiz from '${course.title} - ${unit.title}'`}</code>
+        <code>{`import Quiz from '${headerCourseTitle} - ${headerUnitTitle}'`}</code>
       </div>
+
+      {(loadingCourse || progressLoading) && (
+        <div style={{ padding: "8px 18px", color: "#bbb" }}>
+          {loadingCourse
+            ? pickText("Loading course...", "កំពុងផ្ទុកវគ្គសិក្សា...")
+            : pickText("Syncing progress...", "កំពុងសមកាលកម្ម...")}
+        </div>
+      )}
 
       <div className="lesson-content-wrapper">
         <div className="lesson-content qcm-content">
-          {!finished ? (
+          {!result ? (
             <>
-              <h2 className="qcm-title">Quiz</h2>
+              <h2 className="qcm-title">{pickText("Quiz", "សំណួរ")}</h2>
 
               <div className="qcm-question-block">
                 <div className="qcm-question-text">
-                  {index + 1}. {current.question}
+                  {index + 1}. {questionText}
                 </div>
 
                 <div className="qcm-options">
-                  {current.options.map((op, i) => (
-                    <label key={i} className={`qcm-option ${selected === op ? "selected" : ""}`}>
-                      <input
-                        type="radio"
-                        name="qcm"
-                        value={op}
-                        checked={selected === op}
-                        onChange={() => {
-                          setSelected(op);
-                          setShowWarning(false);
-                        }}
-                      />
-                      <span>{op}</span>
-                    </label>
-                  ))}
+                  {(current?.options || [])
+                    .slice()
+                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.id ?? 0) - (b.id ?? 0))
+                    .map((op) => {
+                      const selected = Number(answersMap[current.id]) === Number(op.id);
+                      const optionText = pickText(op?.text, op?.text_km);
+
+                      return (
+                        <label key={op.id} className={`qcm-option ${selected ? "selected" : ""}`}>
+                          <input
+                            type="radio"
+                            name={`qcm-${current.id}`}
+                            value={op.id}
+                            checked={selected}
+                            onChange={() => {
+                              setAnswersMap((prev) => ({ ...prev, [current.id]: op.id }));
+                              setShowWarning(false);
+                            }}
+                          />
+                          <span>{optionText}</span>
+                        </label>
+                      );
+                    })}
                 </div>
+
+                {!!explanationText && (
+                  <div style={{ marginTop: 10, opacity: 0.75, fontSize: 14 }}>
+                    {pickText("Note:", "ចំណាំ:")} {explanationText}
+                  </div>
+                )}
               </div>
 
-              {showWarning && <div className="qcm-warning">⚠️ Please select an answer before continuing.</div>}
-
-              <div className="qcm-bottom-row">
-                <div className="qcm-question-count">
-                  Question {index + 1} of {total}
+              {showWarning && (
+                <div className="qcm-warning">
+                  ⚠️ {pickText("Please select an answer before continuing.", "សូមជ្រើសរើសចម្លើយមុនបន្ត។")}
                 </div>
-
-                <button className="qcm-next-btn" onClick={handleSubmit}>
-                  {index + 1 === total ? "Finish" : "Next"}
-                </button>
-              </div>
+              )}
             </>
           ) : (
             <div className="qcm-result-wrapper">
               <div className="qcm-result-summary">
-                <h2>Quiz Results</h2>
+                <h2>{pickText("Quiz Results", "លទ្ធផលសំណួរ")}</h2>
 
-                <div className="qcm-result-grid">
-                  <div>
-                    <div className="qcm-label">Score</div>
-                    <div className="qcm-value">{correctCount} / {total}</div>
-                  </div>
-                  <div>
-                    <div className="qcm-label">Percentage</div>
-                    <div className="qcm-value">{percentage}%</div>
-                  </div>
-                  <div>
-                    <div className="qcm-label">Grade</div>
-                    <div className="qcm-value">{grade}</div>
-                  </div>
+                <div style={{ marginTop: 10, opacity: 0.9 }}>
+                  {pickText("Score:", "ពិន្ទុ:")} {correctCount} / {resultTotal} ({percentage}%)
                 </div>
 
-                <div className="qcm-result-buttons">
-                  <button className="qcm-btn-secondary" onClick={handleRetry}>
-                    🔁 Retry Quiz
+                <div className="qcm-result-buttons" style={{ marginTop: 14 }}>
+                  <button className="qcm-btn-secondary" onClick={handleRetry} type="button">
+                    🔁 {pickText("Retry Quiz", "សាកល្បងម្តងទៀត")}
                   </button>
 
                   {Number(percentage) >= 50 ? (
-                    <button className="qcm-btn-primary" onClick={goToNextUnit}>
-                      ➜ Continue
+                    <button className="qcm-btn-primary" onClick={goToNextUnit} type="button">
+                      ➜ {pickText("Continue", "បន្ត")}
                     </button>
                   ) : (
                     <div className="qcm-locked-msg">
-                      ❗ You need at least <b>50%</b> to unlock the next unit.
+                      ❗{" "}
+                      {pickText(
+                        "You need at least 50% to unlock the next unit.",
+                        "អ្នកត្រូវការយ៉ាងហោចណាស់ 50% ដើម្បីដោះសោរយូនីតបន្ទាប់។"
+                      )}
                     </div>
                   )}
                 </div>
               </div>
-
-              {answers.length > 0 && (
-                <div className="qcm-review-box">
-                  {wrongAnswers.length > 0 && reviewMode === "prompt" ? (
-                    <>
-                      <h3>You have some wrong answers</h3>
-                      <p className="qcm-review-sub">
-                        Do you want to see the correct answers, or try again by yourself?
-                      </p>
-
-                      <div className="qcm-review-actions">
-                        <button className="qcm-btn-secondary" onClick={handleRetry}>
-                          🔁 Do it again
-                        </button>
-
-                        <button className="qcm-btn-primary" onClick={() => setReviewMode("show")}>
-                          ✅ Show correct answers
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h3>Correct Answers</h3>
-                      {answers.map((item, idx) => (
-                        <div className="qcm-review-item" key={idx}>
-                          <div className="qcm-review-question">
-                            {idx + 1}. {item.question}
-                          </div>
-
-                          <div className="qcm-review-answer correct">
-                            Correct answer: <span>{item.correct}</span>
-                          </div>
-
-                          {!item.isCorrect && (
-                            <div className="qcm-review-answer wrong">
-                              Your answer: <span>{item.selected}</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </div>
       </div>
 
+      {/* FOOTER */}
       <div className="lesson-footer-bar">
         <div className="lf-left">
-          <button
-            className="lf-btn"
-            onClick={() => {
-              saveTime();
-              navigate(`/courses/${courseId}`);
-            }}
-          >
+          <button className="lf-btn" onClick={() => navigate(`/courses/${courseKey}`)} type="button">
             <i className="bi bi-house"></i>
           </button>
 
           <div className="dropdown-container" ref={menuRef}>
-            <button className="lf-btn" onClick={() => setOpenMenu(!openMenu)}>
+            <button className="lf-btn" onClick={() => setOpenMenu(!openMenu)} type="button">
               <i className="bi bi-list"></i>
             </button>
 
-            {openMenu && (
+            {openMenu && !result && (
               <div className="lesson-dropdown">
-                <h4>{unit.title} • Quiz</h4>
+                <h4>
+                  {headerUnitTitle} • {pickText("Quiz", "សំណួរ")}
+                </h4>
                 <ul>
                   {questions.map((q, i) => (
-                    <li key={q.id || i}>
+                    <li key={q.id}>
                       <button
                         className="qcm-jump-btn"
                         onClick={() => {
                           setIndex(i);
-                          setSelected("");
-                          setAnswers([]);
-                          setFinished(false);
-                          setShowWarning(false);
-                          setReviewMode("prompt");
                           setOpenMenu(false);
                         }}
+                        type="button"
                       >
-                        Question {i + 1}
+                        {pickText("Question", "សំណួរ")} {i + 1}
                       </button>
                     </li>
                   ))}
@@ -342,29 +623,41 @@ export default function QCMPage() {
             )}
           </div>
 
-          <button className="lf-unit-title">{unit.title} • Quiz</button>
+          <button className="lf-unit-title" type="button">
+            {headerUnitTitle} • {pickText("Quiz", "សំណួរ")}
+          </button>
         </div>
 
         <div className="lf-right">
-          {!finished ? (
+          {!result ? (
             <>
-              <span className="lf-count">Question {index + 1} / {total}</span>
-              <button className="lf-nav" onClick={handleSubmit}>
-                {index + 1 === total ? "Finish" : "Next →"}
+              <button className="lf-nav" onClick={handleBack} type="button">
+                ← {pickText("Back", "ថយក្រោយ")}
+              </button>
+
+              <span className="lf-count">
+                {index + 1} / {total}
+              </span>
+
+              <button className="lf-nav" onClick={handleNext} disabled={submitting} type="button">
+                {index + 1 === total
+                  ? submitting
+                    ? pickText("Submitting...", "កំពុងបញ្ជូន...")
+                    : pickText("Finish →", "បញ្ចប់ →")
+                  : pickText("Next →", "បន្ទាប់ →")}
               </button>
             </>
           ) : (
             <>
-              <span className="lf-count">
-                Score: {correctCount}/{total} ({percentage}%)
-              </span>
-
+              <button className="lf-nav" onClick={handleRetry} type="button">
+                {pickText("Retry", "សាកល្បងម្តងទៀត")}
+              </button>
               {Number(percentage) >= 50 ? (
-                <button className="lf-nav" onClick={goToNextUnit}>
-                  Continue →
+                <button className="lf-nav" onClick={goToNextUnit} type="button">
+                  {pickText("Continue →", "បន្ត →")}
                 </button>
               ) : (
-                <span className="lf-nav-disabled">Continue (Locked)</span>
+                <span className="lf-nav-disabled">{pickText("Continue (Locked)", "បន្ត (បានចាក់សោរ)")}</span>
               )}
             </>
           )}

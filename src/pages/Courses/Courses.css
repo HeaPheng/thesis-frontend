@@ -1,6 +1,6 @@
 /* ✅ New wrapper (used by the updated Courses.jsx) */
 .courses-page {
-  background: #000;
+  background: rgb(11, 18, 32);
   min-height: 100vh;
   padding-top: 65px;
   /* navbar space */
@@ -11,7 +11,7 @@
 .courses-page-wrapper {
   background: #000;
   min-height: 100vh;
-  padding-top: 90px;
+  padding-top: 65px;
   padding-bottom: 80px;
 }
 
@@ -23,7 +23,7 @@
 
 /* ✅ Hero / Header (Tips vibe) */
 .courses-hero {
-  margin-bottom: 22px;
+  margin-bottom: 35px;
 }
 
 .courses-title,

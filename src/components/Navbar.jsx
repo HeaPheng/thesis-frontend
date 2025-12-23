@@ -1,24 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Container, Nav, Navbar } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import LanguageSwitcher from "./LanguageSwitcher";
 import "./Navbar.css";
 import Logo from "../assets/images/logo.png";
+import api from "../lib/api";
 
-const AppNavbar = ({ lang, setLang }) => {
+const AppNavbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  // ✅ Navbar owns its language (source: localStorage + event)
+  const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
+
+  useEffect(() => {
+    const onLang = (e) => {
+      const next = e?.detail?.lang || localStorage.getItem("app_lang") || "en";
+      setLang(next === "km" ? "km" : "en");
+    };
+    window.addEventListener("app-lang-changed", onLang);
+
+    // also sync once on mount (in case user refreshed)
+    onLang({ detail: { lang: localStorage.getItem("app_lang") || "en" } });
+
+    return () => window.removeEventListener("app-lang-changed", onLang);
+  }, []);
 
   const isStudyPage =
     location.pathname.includes("/lesson/") ||
     location.pathname.includes("/coding") ||
     location.pathname.includes("/qcm");
 
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("isLoggedIn") === "true"
-  );
+  // ✅ Auth source of truth
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [userName, setUserName] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null")?.name || "";
+    } catch {
+      return "";
+    }
+  });
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -28,7 +51,15 @@ const AppNavbar = ({ lang, setLang }) => {
 
   useEffect(() => {
     const syncAuth = () => {
-      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+
+      try {
+        const u = JSON.parse(localStorage.getItem("user") || "null");
+        setUserName(u?.name || "");
+      } catch {
+        setUserName("");
+      }
     };
 
     syncAuth();
@@ -41,8 +72,39 @@ const AppNavbar = ({ lang, setLang }) => {
     };
   }, [location.pathname]);
 
-  const handleLogout = () => {
+  const ui = useMemo(() => {
+    if (lang === "km") {
+      return {
+        courses: "វគ្គសិក្សា",
+        careers: "ជំនាញ",
+        tutorials: "មេរៀនខ្លីៗ",
+        login: "ចូលគណនី",
+        register: "ចុះឈ្មោះ",
+        logout: "ចេញពីគណនី",
+      };
+    }
+    return {
+      courses: "Courses",
+      careers: "Careers",
+      tutorials: "Tutorials",
+      login: "Login",
+      register: "Register",
+      logout: "Logout",
+    };
+  }, [lang]);
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch {}
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+
     window.dispatchEvent(new Event("auth-changed"));
     navigate("/");
   };
@@ -56,7 +118,6 @@ const AppNavbar = ({ lang, setLang }) => {
       className={`navbar ${scrolled ? "navbar-shadow" : ""}`}
     >
       <Container fluid className="px-2">
-        {/* ✅ Logo: go Dashboard if logged-in, else Home */}
         <Navbar.Brand
           as={Link}
           to={isLoggedIn ? "/dashboard" : "/"}
@@ -68,56 +129,51 @@ const AppNavbar = ({ lang, setLang }) => {
           </span>
         </Navbar.Brand>
 
-        {/* ✅ Study pages: only language switcher */}
         {isStudyPage ? (
           <Nav className="ms-auto d-flex align-items-center gap-3">
-            <LanguageSwitcher lang={lang} setLang={setLang} />
+            <LanguageSwitcher />
           </Nav>
         ) : (
           <>
             <Navbar.Toggle aria-controls="main-navbar" />
             <Navbar.Collapse id="main-navbar">
               <Nav className="ms-auto d-flex align-items-center gap-3">
-                {/* ✅ Always show these (normal pages) */}
                 <Nav.Link as={Link} to="/courses" className="course-bot">
-                  Courses
+                  {ui.courses}
                 </Nav.Link>
 
                 <Nav.Link as={Link} to="/careers" className="carreer-bot">
-                  Careers
+                  {ui.careers}
                 </Nav.Link>
 
-                {/* ✅ NEW: Tips */}
                 <Nav.Link as={Link} to="/tips" className="tips-bot">
-                  Tutorials
+                  {ui.tutorials}
                 </Nav.Link>
 
-                {/* ✅ Auth buttons only */}
                 {!isLoggedIn ? (
                   <div className="auth-buttons d-flex align-items-center">
                     <Nav.Link as={Link} to="/login">
                       <Button variant="outline-light" size="sm">
-                        Login
+                        {ui.login}
                       </Button>
                     </Nav.Link>
 
                     <Nav.Link as={Link} to="/register">
                       <Button variant="primary" size="sm">
-                        Register
+                        {ui.register}
                       </Button>
                     </Nav.Link>
                   </div>
                 ) : (
-                  <Button
-                    variant="outline-light"
-                    size="sm"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </Button>
+                  <div className="d-flex align-items-center gap-2">
+                    {userName}
+                    <Button variant="btn btn-outline-danger" size="sm" onClick={handleLogout}>
+                      {ui.logout}
+                    </Button>
+                  </div>
                 )}
 
-                <LanguageSwitcher lang={lang} setLang={setLang} />
+                <LanguageSwitcher />
               </Nav>
             </Navbar.Collapse>
           </>

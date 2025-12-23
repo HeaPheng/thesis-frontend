@@ -1,5 +1,5 @@
 .tips-page {
-  background: #000;
+  background: rgb(11, 18, 32);
   min-height: 100vh;
   padding-top: 65px; /* navbar space */
   padding-bottom: 80px;
@@ -110,9 +110,9 @@
 }
 
 .tips-card-title {
-  color: #fff;
+  color: rgb(59 130 246);
   font-weight: 750;
-  font-size: 18px;
+  font-size: 20px;
   margin: 8px 0 8px;
 }
 
@@ -121,6 +121,13 @@
   font-size: 14px;
   line-height: 1.7;
   margin: 0 0 12px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;     /* show 3 lines only */
+  -webkit-box-orient: vertical;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .tips-tags {

@@ -8,7 +8,10 @@ const Footer = () => {
     const isLessonPage = location.pathname.includes("/lesson/")||
     location.pathname.includes("/coding") ||
     location.pathname.includes("/qcm")||
-    location.pathname.includes("/dashboard");
+    location.pathname.includes("/dashboard")||
+    location.pathname.includes("/my-learning")||
+    location.pathname.includes("/register")||
+    location.pathname.includes("/login");
     // 🔥 HIDE FOOTER COMPLETELY ON LESSON PAGE
     if (isLessonPage) return null;
 
@@ -35,8 +38,8 @@ const Footer = () => {
                 {/* CONTACT */}
                 <div className="footer-section">
                     <h4>Contact</h4>
-                    <p><i className="bi bi-envelope"></i> support@learningapp.com</p>
-                    <p><i className="bi bi-phone"></i> +855 12 345 678</p>
+                    <p><i className="bi bi-envelope"></i> phenggaming14@gmail.com</p>
+                    <p><i className="bi bi-phone"></i> +855 86458980</p>
                     <p><i className="bi bi-geo-alt"></i> Phnom Penh, Cambodia</p>
                 </div>
 

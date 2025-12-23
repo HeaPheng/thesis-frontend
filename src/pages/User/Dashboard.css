@@ -1,7 +1,7 @@
 .dash-page {
   min-height: 100vh;
   background: #0b1220;
-  padding: 110px 0 50px;
+  padding: 80px 0 50px;
   color: #e5e7eb;
 }
 
@@ -288,4 +288,517 @@
 .dash-form-actions {
   display: flex;
   justify-content: flex-end;
+}
+/* ===== Premium Continue Learning Section ===== */
+.dash-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dash-section-title {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: aquamarine;
+}
+
+.dash-course-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.dash-course-cover {
+  position: relative;
+  height: 140px;
+  background: rgba(255,255,255,0.06);
+}
+
+.dash-course-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05);
+  transform: scale(1.01);
+}
+
+.dash-course-img-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  color: rgba(255,255,255,0.7);
+}
+
+.dash-course-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.05),
+    rgba(0,0,0,0.65)
+  );
+}
+
+.dash-course-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px);
+}
+
+.dash-course-pct {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  font-weight: 900;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.dash-course-body {
+  padding: 14px;
+}
+
+.dash-course-title {
+  font-weight: 900;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgb(59 130 246);
+}
+
+.dash-course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dash-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.92);
+}
+
+.dash-pill-success {
+  background: rgba(38, 222, 129, 0.12);
+  border-color: rgba(38, 222, 129, 0.28);
+}
+
+.dash-course-progress {
+  margin-top: 12px;
+}
+
+.dash-course-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.dash-course-progress-value {
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255,255,255,0.92);
+}
+
+.dash-course-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dash-course-cta {
+  flex: 1;
+  font-weight: 800;
+  border-radius: 12px;
+}
+
+.dash-course-secondary {
+  border-radius: 12px;
+}
+/* ===== Tabs (Courses/Career) ===== */
+.dash-tab-switch {
+  display: flex;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.dash-tab-btn {
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dash-tab-btn.active {
+  background: #1677ff;
+  color: white;
+}
+
+/* ===== Section Head ===== */
+.dash-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dash-section-title {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+/* ===== Premium Course Cards ===== */
+.dash-course-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.dash-course-cover {
+  position: relative;
+  height: 140px;
+  background: rgba(255,255,255,0.06);
+}
+
+.dash-course-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05);
+  transform: scale(1.01);
+}
+
+.dash-course-img-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  color: rgba(255,255,255,0.7);
+}
+
+.dash-course-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.65));
+}
+
+.dash-course-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px);
+}
+
+.dash-course-pct {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  font-weight: 900;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.dash-course-body { padding: 14px; }
+
+.dash-course-title {
+  font-weight: 900;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dash-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.92);
+}
+
+.dash-pill-success {
+  background: rgba(38, 222, 129, 0.12);
+  border-color: rgba(38, 222, 129, 0.28);
+}
+
+.dash-course-progress { margin-top: 12px; }
+
+.dash-course-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.dash-course-progress-value {
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255,255,255,0.92);
+}
+
+.dash-course-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dash-course-cta {
+  flex: 1;
+  font-weight: 900;
+  border-radius: 12px;
+}
+
+.dash-course-secondary { border-radius: 12px; }
+
+.dash-cert-btn {
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+/* ===== Career Cards ===== */
+.dash-career-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.dash-career-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-career-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.dash-career-title {
+  font-weight: 900;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-career-pct {
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.dash-career-mid { margin-top: 12px; }
+.dash-career-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+/* ===== Animated progress fill ===== */
+.dash-progress-anim .progress-bar {
+  transition: width 520ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* ===== Skeleton loaders ===== */
+.dash-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.dash-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.00),
+    rgba(255,255,255,0.12),
+    rgba(255,255,255,0.00)
+  );
+  animation: dashShimmer 1.25s infinite;
+}
+
+@keyframes dashShimmer {
+  100% { transform: translateX(100%); }
+}
+
+.dash-skel-text {
+  display: inline-block;
+  width: 54px;
+  height: 18px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-skel-text::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.00),
+    rgba(255,255,255,0.16),
+    rgba(255,255,255,0.00)
+  );
+  animation: dashShimmer 1.25s infinite;
+}
+.dash-career-card.premium{
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  transition: transform .25s ease, box-shadow .25s ease;
+  cursor: pointer;
+}
+.dash-career-card.premium:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 18px 45px rgba(0,0,0,0.5);
+}
+
+.career-cover{ position: relative; height: 140px; background: rgba(255,255,255,0.06); }
+.career-cover-img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.career-cover-fallback{
+  height: 100%;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 34px; color: rgba(255,255,255,0.75);
+  background: linear-gradient(135deg, rgba(34,211,238,0.25), rgba(99,102,241,0.25));
+}
+.career-cover-overlay{
+  position:absolute; inset:0;
+  background: linear-gradient(to top, rgba(2,6,23,0.92), rgba(2,6,23,0.15));
+}
+.career-cover-pct{
+  position:absolute; right: 12px; bottom: 10px;
+  font-weight: 800; font-size: 18px;
+  color: #38bdf8;
+  background: rgba(2,6,23,0.65);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+}
+
+.career-body{ padding: 14px 16px 16px; }
+.career-title{
+  font-size: 16px; font-weight: 800; color: #e5e7eb;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.career-sub{ margin-top: 2px; font-size: 12px; color: #9ca3af; }
+
+.career-progress{ margin-top: 12px; }
+.career-progress-row{ display:flex; justify-content:space-between; font-size:12px; opacity:.9; }
+.career-muted{ color:#9ca3af; }
+.career-pct-text{ color:#e5e7eb; font-weight:700; }
+
+.career-progress .progress{
+  height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08);
+}
+.career-progress .progress-bar{
+  background: linear-gradient(90deg, #22d3ee, #6366f1);
+}
+
+.career-actions{ margin-top: 14px; display:flex; gap:10px; }
+.career-cta{
+  flex: 1;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  display:flex; align-items:center; justify-content: space-between;
+  background: linear-gradient(135deg, #22d3ee, #6366f1);
+  border: none;
+  color: #020617;
+  transition: filter .2s ease, transform .15s ease;
+}
+.career-cta:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+.career-secondary{
+  border-radius: 12px;
+  padding: 10px 14px;
 }

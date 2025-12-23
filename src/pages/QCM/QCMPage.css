@@ -258,3 +258,15 @@
   margin-top: 10px;
   flex-wrap: wrap;
 }
+.qcm-content {
+  margin-top: 25px;
+}
+.qcm-btn-primary:disabled,
+.qcm-btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.qcm-btn-secondary {
+  border: 1px solid #1e293b; /* matches your panel borders */
+}

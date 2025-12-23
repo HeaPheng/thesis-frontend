@@ -1,51 +1,67 @@
-// src/pages/Tips/TipDetail.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Container } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
-import tipsData from "../../data/tipsData";
+import api from "../../lib/api";
 import "./TipDetail.css";
 
 export default function TipDetail() {
   const { slug } = useParams();
-  const tip = tipsData.find((t) => t.slug === slug);
+
+  const [tip, setTip] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [activeId, setActiveId] = useState("");
 
-  // build ids for each section
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+
+    api
+      .get(`/tips/${slug}`)
+      .then((res) => {
+        if (!alive) return;
+        setTip(res.data);
+      })
+      .catch((err) => {
+        console.error("Failed to load tip detail:", err);
+        if (!alive) return;
+        setTip(null);
+      })
+      .finally(() => {
+        if (!alive) return;
+        setLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [slug]);
+
   const sections = useMemo(() => {
     if (!tip) return [];
-    return tip.sections.map((s, idx) => ({
+    const raw = Array.isArray(tip.sections) ? tip.sections : [];
+    return raw.map((s, idx) => ({
       ...s,
       _id: `section-${idx + 1}`,
       _index: idx,
     }));
   }, [tip]);
 
-  // Highlight active section while scrolling
   useEffect(() => {
     if (!sections.length) return;
 
     const ids = sections.map((s) => s._id);
-    const els = ids
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
-
+    const els = ids.map((id) => document.getElementById(id)).filter(Boolean);
     if (!els.length) return;
 
     const obs = new IntersectionObserver(
       (entries) => {
-        // pick the visible one with highest intersection
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
         if (visible?.target?.id) setActiveId(visible.target.id);
       },
-      {
-        root: null,
-        threshold: [0.2, 0.35, 0.5, 0.65],
-        rootMargin: "-20% 0px -60% 0px", // makes highlighting feel nicer
-      }
+      { threshold: [0.2, 0.35, 0.5, 0.65], rootMargin: "-20% 0px -60% 0px" }
     );
 
     els.forEach((el) => obs.observe(el));
@@ -55,11 +71,19 @@ export default function TipDetail() {
   const scrollTo = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
-
-    // account for sticky navbar height
     const y = el.getBoundingClientRect().top + window.scrollY - 90;
     window.scrollTo({ top: y, behavior: "smooth" });
   };
+
+  if (loading) {
+    return (
+      <div className="tipdetail-page">
+        <Container className="tipdetail-container">
+          <h2 style={{ color: "white" }}>Loading...</h2>
+        </Container>
+      </div>
+    );
+  }
 
   if (!tip) {
     return (
@@ -82,7 +106,6 @@ export default function TipDetail() {
         </Link>
 
         <div className="tipdetail-layout">
-          {/* LEFT: Sidebar */}
           <aside className="tipdetail-sidebar">
             <div className="tipdetail-side-title">On this page</div>
 
@@ -90,9 +113,8 @@ export default function TipDetail() {
               {sections.map((s) => (
                 <button
                   key={s._id}
-                  className={`tipdetail-side-item ${
-                    activeId === s._id ? "active" : ""
-                  }`}
+                  className={`tipdetail-side-item ${activeId === s._id ? "active" : ""
+                    }`}
                   onClick={() => scrollTo(s._id)}
                   type="button"
                 >
@@ -102,38 +124,55 @@ export default function TipDetail() {
             </div>
           </aside>
 
-          {/* RIGHT: Content */}
           <main className="tipdetail-main">
-            {/* HEADER CARD */}
             <div className="tipdetail-head">
               <div className="tipdetail-meta">
-                <span className="tipdetail-chip">{tip.level}</span>
-                <span className="tipdetail-date">{tip.date}</span>
+                <span className="tipdetail-chip">{tip.level || "Beginner"}</span>
+                <span className="tipdetail-date">
+                  {(() => {
+                    const d = tip.published_at || tip.created_at;
+                    if (!d) return "";
+                    const date = new Date(d);
+                    if (Number.isNaN(date.getTime())) return String(d);
+
+                    return date.toLocaleDateString("en-GB", {
+                      year: "numeric",
+                      month: "short",
+                      day: "2-digit",
+                    });
+                  })()}
+                </span>
               </div>
 
               <h1 className="tipdetail-title">{tip.title}</h1>
               <p className="tipdetail-summary">{tip.summary}</p>
 
-              {/* Optional top cover image for the whole tip */}
-              {tip.cover && (
-                <div className="tipdetail-cover">
-                  <img src={tip.cover} alt={tip.title} />
-                </div>
-              )}
+              {(() => {
+                const coverSrc = tip.cover_url
+                  ? tip.cover_url.startsWith("http")
+                    ? tip.cover_url
+                    : tip.cover_url.startsWith("/storage/")
+                      ? `http://127.0.0.1:8000${tip.cover_url}`
+                      : `http://127.0.0.1:8000/storage/${tip.cover_url}`
+                  : null;
+
+                return coverSrc ? (
+                  <div className="tipdetail-cover">
+                    <img src={coverSrc} alt={tip.title} />
+                  </div>
+                ) : null;
+              })()}
             </div>
 
-            {/* SECTIONS */}
             <div className="tipdetail-body">
               {sections.map((s) => (
                 <div key={s._id} id={s._id} className="tipdetail-section">
                   <h3>{s.heading}</h3>
-                  <p>{s.text}</p>
-                
-                  {s.code && (
-                    <pre className="tipdetail-code">
-                      <code>{s.code}</code>
-                    </pre>
-                  )}
+
+                  <div
+                    className="tipdetail-rich"
+                    dangerouslySetInnerHTML={{ __html: s.html || "" }}
+                  />
                 </div>
               ))}
             </div>

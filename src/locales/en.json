@@ -18,6 +18,11 @@
   "js_course": "JavaScript Essentials",
   "js_desc": "Understand JavaScript with simple and clear lessons.",
   "view_all_courses": "View All Courses",
-  "view_all_careers": "View All Careers"
-  
+  "view_all_careers": "View All Careers",
+  "my_Learning": "My Learning",
+  "profile": "Profile",
+  "settings": "Settings",
+  "logout": "Logout",
+  "courses" : "Courses",
+  "progress" : "Progress"
 }

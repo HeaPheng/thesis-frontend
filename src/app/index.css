@@ -27,3 +27,48 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+html, body, #root {
+  height: 100%;
+  background: #000;
+}
+
+body {
+  margin: 0;
+  background: #000;
+}
+
+/* layout shell */
+.app-shell{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+
+.app-main{
+  flex: 1;
+  min-height: 60vh; /* keeps stable height during small pages/loading */
+}
+/* Default font stack (English) */
+:root {
+  --font-latin: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-khmer: "Hanuman", "Khmer OS Siemreap", "Khmer OS", serif;
+}
+
+html, body {
+  font-family: var(--font-latin) !important;
+}
+
+/* Khmer mode */
+html.lang-km, html.lang-km body {
+  font-family: var(--font-khmer) !important;
+}
+
+/* Optional: improve Khmer readability */
+html.lang-km body {
+  letter-spacing: 0;          /* Khmer doesn’t like extra spacing */
+  line-height: 1.75;          /* more comfortable for Khmer */
+}
+html.lang-km * {
+  font-family: var(--font-khmer) !important;
+}

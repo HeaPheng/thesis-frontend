@@ -1,5 +1,5 @@
 .careers-page {
-  background: #000;
+  background: rgb(11, 18, 32);
   min-height: 100vh;
   padding-top: 65px;
   padding-bottom: 80px;
@@ -103,4 +103,17 @@
   margin-top: 30px;
   color: #94a3b8;
   text-align: center;
+}
+.career-description{
+   font-size: 14px;
+  color: rgba(226, 232, 240, 0.82);
+  line-height: 1.35rem;
+  margin: 0;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+
+  min-height: calc(1.35rem * 3);
 }

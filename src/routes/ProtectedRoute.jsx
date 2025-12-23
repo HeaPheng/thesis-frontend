@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
-const isAuthed = () => localStorage.getItem("isLoggedIn") === "true";
+const isAuthed = () => !!localStorage.getItem("token"); // ✅ token is the source of truth
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }) {
       <Navigate
         to="/login"
         replace
-        state={{ from: location.pathname }}
+        state={{ from: location.pathname }} // keeps your "redirect back" behavior
       />
     );
   }

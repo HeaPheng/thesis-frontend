@@ -1,5 +1,11 @@
+// AppRoutes.jsx (FULL MODIFIED)
+// ✅ Fixes duplicate QCM route
+// ✅ Restores legacy /qcm (unit-based) -> redirects to /qcm/:lastLessonId
+// ✅ Keeps your lesson-based real QCM route
+
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
+import api from "../lib/api";
 
 import MainLayout from "../layouts/MainLayout";
 
@@ -13,7 +19,7 @@ import CareerDetail from "../pages/CareerDetail/CareerDetail";
 import LessonPage from "../pages/Lessons/LessonPage";
 import QCMPage from "../pages/QCM/QCMPage";
 import CodingPage from "../pages/Coding/CodingPage";
-
+import MyLearning from "../pages/User/MyLearning";
 import Dashboard from "../pages/User/Dashboard";
 import Profile from "../pages/User/Profile";
 import Settings from "../pages/User/Settings";
@@ -21,7 +27,44 @@ import Settings from "../pages/User/Settings";
 import Tips from "../pages/Tips/Tips";
 import TipDetail from "../pages/Tips/TipDetail";
 
-import ProtectedRoute from "./ProtectedRoute"; // ✅ add this
+import ProtectedRoute from "./ProtectedRoute";
+
+/** ✅ Legacy redirect: /qcm -> /qcm/:lastLessonId */
+function LegacyQcmRedirectToLastLesson() {
+  const { courseId, unitId } = useParams();
+  const [target, setTarget] = React.useState(null);
+
+  React.useEffect(() => {
+    let alive = true;
+
+    async function run() {
+      try {
+        const { data } = await api.get(`/courses/${courseId}`);
+        const unit = (data?.units || []).find((u) => Number(u.id) === Number(unitId));
+        const lastLessonId = unit?.lessons?.[unit?.lessons?.length - 1]?.id;
+
+        if (!alive) return;
+
+        if (lastLessonId) {
+          setTarget(`/course/${courseId}/unit/${unitId}/qcm/${Number(lastLessonId)}`);
+        } else {
+          setTarget(`/courses/${courseId}`);
+        }
+      } catch {
+        if (!alive) return;
+        setTarget(`/courses/${courseId}`);
+      }
+    }
+
+    run();
+    return () => {
+      alive = false;
+    };
+  }, [courseId, unitId]);
+
+  if (!target) return null; // or a loading UI
+  return <Navigate to={target} replace />;
+}
 
 const AppRoutes = ({ lang, setLang }) => {
   return (
@@ -38,7 +81,7 @@ const AppRoutes = ({ lang, setLang }) => {
         <Route path="/tips" element={<Tips />} />
         <Route path="/tips/:slug" element={<TipDetail />} />
 
-        {/* 🔒 Protected: clicking "Start Learning" / details requires login */}
+        {/* 🔒 Protected: details */}
         <Route
           path="/courses/:id"
           element={
@@ -66,6 +109,14 @@ const AppRoutes = ({ lang, setLang }) => {
           }
         />
         <Route
+          path="/my-learning"
+          element={
+            <ProtectedRoute>
+              <MyLearning />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
@@ -82,7 +133,7 @@ const AppRoutes = ({ lang, setLang }) => {
           }
         />
 
-        {/* 🔒 Protected: lesson/qcm/coding pages */}
+        {/* 🔒 Protected: learning pages */}
         <Route
           path="/course/:courseId/unit/:unitId/lesson/:lessonId"
           element={
@@ -91,6 +142,7 @@ const AppRoutes = ({ lang, setLang }) => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/course/:courseId/unit/:unitId/coding"
           element={
@@ -99,13 +151,21 @@ const AppRoutes = ({ lang, setLang }) => {
             </ProtectedRoute>
           }
         />
+
+        {/* ✅ REAL QCM route (lesson-based) */}
         <Route
-          path="/course/:courseId/unit/:unitId/qcm"
+          path="/course/:courseId/unit/:unitId/qcm/:lessonId"
           element={
             <ProtectedRoute>
               <QCMPage />
             </ProtectedRoute>
           }
+        />
+
+        {/* ✅ Legacy QCM route (unit-based URL) */}
+        <Route
+          path="/course/:courseId/unit/:unitId/qcm"
+          element={<LegacyQcmRedirectToLastLesson />}
         />
       </Route>
     </Routes>

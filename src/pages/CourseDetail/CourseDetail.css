@@ -191,3 +191,38 @@
 .cd-lesson-meta.locked {
   color: #94a3b8;
 }
+.course-premium-title{
+  font-size: clamp(28px, 3.2vw, 46px);
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  margin: 8px 0 6px;
+  line-height: 1.15;
+  margin-bottom: 30px;
+  /* premium gradient text */
+  background: linear-gradient(90deg, #60a5fa 0%, #22c55e 55%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* glow */
+  text-shadow: 0 0 22px rgba(56, 189, 248, 0.22);
+  position: relative;
+}
+
+.course-premium-title::after{
+  content: "";
+  display: block;
+  width: 96px;
+  height: 4px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(96,165,250,.9), rgba(34,197,94,.9));
+  box-shadow: 0 10px 22px rgba(59,130,246,0.18);
+}
+
+.course-premium-sub{
+  margin: 0 0 18px;
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 14px;
+  font-weight: 600;
+}

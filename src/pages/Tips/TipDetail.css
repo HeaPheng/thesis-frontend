@@ -2,8 +2,8 @@
 .tipdetail-page {
   background: #000;
   min-height: 100vh;
-  padding-top: 90px;
-  padding-bottom: 80px;
+  padding-top: 65px;
+  padding-bottom: 70px;
 }
 
 .tipdetail-container {
@@ -108,11 +108,16 @@
 }
 
 .tipdetail-title {
-  color: #fff;
+  background: linear-gradient(90deg, #60a5fa 0%, #22c55e 55%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
   font-size: 28px;
   font-weight: 800;
   margin: 0 0 8px;
 }
+
 
 .tipdetail-summary {
   color: #cbd5e1;
@@ -204,3 +209,12 @@
     top: 0;
   }
 }
+.tipdetail-rich p { margin-bottom: 12px; }
+.tipdetail-rich pre {
+  background: #75ebef;
+  padding: 14px;
+  border-radius: 12px;
+  overflow: auto;
+}
+.tipdetail-rich code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.tipdetail-rich img { max-width: 100%; border-radius: 12px; }

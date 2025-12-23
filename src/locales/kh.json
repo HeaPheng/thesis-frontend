@@ -18,5 +18,11 @@
   "js_course": "JavaScript គ្រឹះ",
   "js_desc": "យល់ដឹង JavaScript ជាមួយមេរៀនសាមញ្ញ និងច្បាស់លាស់។",
   "view_all_courses": "មើលវគ្គទាំងអស់",
-  "view_all_careers": "មើលមុខរបរទាំងអស់"
+  "view_all_careers": "មើលមុខរបរទាំងអស់",
+  "my_Learning": "ការសិក្សារបស់ខ្ញុំ",
+  "profile": "ប្រូហ្វាល់",
+  "settings": "ការកំណត់",
+  "logout": "ចាកចេញ",
+  "courses" : "វគ្គសិក្សា",
+  "progress" : "វឌ្ឍនភាព"
 }

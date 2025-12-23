@@ -1,3 +1,7 @@
+/* =========================
+   PAGE (keep old style)
+   ========================= */
+
 .career-detail-page {
   background: #05070b;
   min-height: 100vh;
@@ -13,7 +17,8 @@
 .cd-title {
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 16px; 
+  color: #2563eb;
 }
 
 /* Description Box */
@@ -25,7 +30,7 @@
   margin-bottom: 25px;
 }
 
-/* Progress Bar */
+/* Progress Bar (optional if you use it) */
 .cd-progress-wrapper {
   margin-bottom: 30px;
 }
@@ -56,104 +61,228 @@
 }
 
 /* =========================
-   COURSE CARD (height fix)
+   COOL COURSE CARD (keep new)
    ========================= */
 
-.cd-course-card {
-  background: #0f172a;
-  border: 1px solid #1f2937;
-  border-radius: 10px;
-  overflow: hidden;
-
-  /* make card fill column & allow flex layout */
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-/* image */
-.cd-course-img {
-  height: 140px;
-  width: 100%;
-  object-fit: cover;
-}
-
-/* body as flex column */
-.cd-course-card .card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-}
-
-/* title */
-.cd-course-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: wheat;
-}
-
-/* description grows to take the space */
-.cd-course-desc {
-  font-size: 14px;
-  color: #d1d5db;
-  margin-bottom: 10px;
-
-  /* ⭐ Equal height for ALL course description boxes */
-  min-height: 60px;      /* adjust if needed */
-  max-height: 60px;
-
-  flex-grow: 1;          /* stays flexible */
-  overflow: hidden;      /* hides overflowed text */
-
-  line-height: 1.3rem;   /* clean text spacing */
-}
-
-
-/* meta info above the button */
-.cd-course-meta {
-  display: flex;
-  flex-direction: column;
-  font-size: 13px;
-  gap: 2px;
-  margin-bottom: 10px;
-  color: white;
-}
-
-/* button stays at the bottom */
-.cd-course-btn {
-  background: #16a34a;
-  border: none;
-
-  /* push this item down in the flex column */
-  margin-top: auto;
-}
-
-.cd-course-btn:hover {
-  background: #15803d;
-}
-
-/* clickable card */
 .cd-course-card-link {
   text-decoration: none;
   color: inherit;
   display: block;
 }
 
-/* (optional) hover animation */
 .cd-course-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cd-course-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.55),
+    rgba(20, 184, 166, 0.55),
+    rgba(168, 85, 247, 0.45)
+  );
+  filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .cd-course-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  transform: translateY(-10px);
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.5);
 }
 
-/* ensure hover works even when wrapped in Link */
-.cd-course-card-link:hover .cd-course-card {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+.cd-course-card:hover::before {
+  opacity: 1;
+}
+
+.cd-course-img {
+  height: 170px;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.35s ease;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+.cd-course-card:hover .cd-course-img {
+  transform: scale(1.06);
+}
+
+.cd-course-card .card-body {
+  position: relative;
+  z-index: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cd-course-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  color: #2563eb;
+  letter-spacing: 0.2px;
+}
+
+.cd-course-desc {
+  font-size: 14px;
+  color: rgba(226, 232, 240, 0.82);
+  line-height: 1.35rem;
+  margin: 0;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+
+  min-height: calc(1.35rem * 3);
+}
+
+.cd-course-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 10px;
+  margin-top: 2px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.cd-course-meta span {
+  font-size: 12.5px;
+  color: rgba(226, 232, 240, 0.86);
+  background: rgba(2, 6, 23, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cd-course-btn {
+  margin-top: auto;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px;
+  color: white !important;
+
+  background: linear-gradient(135deg, #2563eb, #14b8a6) !important;
+  box-shadow: 0 10px 22px rgba(20, 184, 166, 0.22);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cd-course-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.25);
+}
+/* ===============================
+   PREMIUM CONTINUE PATH BUTTON
+================================ */
+
+.career-primary-cta {
+  position: relative;
+  overflow: hidden;
+  width: 20%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+
+  background: linear-gradient(
+    135deg,
+    #7c7cff 0%,
+    #5a5aff 40%,
+    #3f3fff 100%
+  );
+
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  box-shadow:
+    0 10px 30px rgba(90, 90, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+
+  transition: all 0.25s ease;
+}
+
+.career-primary-cta i {
+  font-size: 18px;
+}
+
+/* glowing background layer */
+.career-primary-cta .cta-glow {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.35),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* content always above glow */
+.career-primary-cta .cta-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* hover */
+.career-primary-cta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 40px rgba(90, 90, 255, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.career-primary-cta:hover .cta-glow {
+  opacity: 1;
+}
+
+/* active */
+.career-primary-cta:active {
+  transform: translateY(0);
+  box-shadow:
+    0 8px 24px rgba(90, 90, 255, 0.45);
+}
+
+/* disabled */
+.career-primary-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.4);
+  box-shadow: none;
 }
