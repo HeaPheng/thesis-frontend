@@ -1,0 +1,359 @@
+/* =========================================
+   CERTIFICATE SHEET (DOWNLOAD RENDER)
+   Wide landscape like modal paper
+========================================= */
+
+.cert-stage {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 8px;
+}
+
+.cert-sheet {
+  position: relative;
+  width: min(1100px, 100%);
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 14px 45px rgba(0, 0, 0, 0.35);
+}
+
+/* Outer border = gradient frame */
+.cert-border-outer {
+  height: 100%;
+  padding: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.25),
+    rgba(124, 58, 237, 0.22),
+    rgba(37, 99, 235, 0.25)
+  );
+}
+
+/* Inner border */
+.cert-border-inner {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 28px 32px;
+  position: relative;
+  border: 2px solid rgba(15, 23, 42, 0.08);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* subtle paper texture */
+.cert-border-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(37, 99, 235, 0.06), transparent 44%),
+    radial-gradient(circle at 82% 70%, rgba(124, 58, 237, 0.06), transparent 48%),
+    linear-gradient(0deg, rgba(2, 6, 23, 0.02), rgba(2, 6, 23, 0));
+  pointer-events: none;
+}
+
+/* watermark */
+.cert-watermark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 72px;
+  color: rgba(0, 0, 0, 0.05);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+/* =========================================
+   HEADER: logo left, brand center, avatar right
+========================================= */
+.cert-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+
+/* logo wrapper */
+.cert-logo-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.cert-logo {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+/* brand center */
+.cert-brand-block {
+  text-align: center;
+  padding: 0 10px;
+}
+
+.cert-brand {
+  font-size: 22px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+
+.cert-brand-sub {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+/* avatar bubble */
+.cert-userbubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  background: rgba(15, 23, 42, 0.06);
+  display: grid;
+  place-items: center;
+}
+
+.cert-useravatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cert-userinitials {
+  font-weight: 900;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+/* =========================================
+   TITLE
+========================================= */
+.cert-title-wrap {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.cert-title {
+  font-size: 40px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+
+.cert-title-line {
+  width: 260px;
+  height: 5px;
+  border-radius: 999px;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+}
+
+/* =========================================
+   BODY
+========================================= */
+.cert-body {
+  text-align: center;
+  padding: 6px 0 0;
+}
+
+.cert-text {
+  font-size: 16px;
+  color: #334155;
+  margin-top: 14px;
+}
+
+.cert-name {
+  font-size: 46px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-top: 10px;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+}
+
+.cert-course {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1e40af;
+  margin-top: 10px;
+  padding: 0 10px;
+}
+
+/* meta blocks */
+.cert-meta {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cert-meta-item {
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.04);
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.cert-meta-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: #334155;
+}
+
+.cert-meta-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-top: 6px;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+.cert-footer {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 18px;
+}
+
+.cert-sign {
+  text-align: center;
+}
+
+.cert-line {
+  height: 2px;
+  background: rgba(15, 23, 42, 0.18);
+  border-radius: 999px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 10px;
+}
+
+.cert-small {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 800;
+}
+
+/* seal */
+.cert-seal {
+  display: grid;
+  place-items: center;
+}
+
+.cert-seal-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(37, 99, 235, 0.18), rgba(124, 58, 237, 0.18));
+  border: 2px solid rgba(37, 99, 235, 0.35);
+  display: grid;
+  place-items: center;
+}
+
+.cert-seal-inner {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  border: 2px dashed rgba(15, 23, 42, 0.22);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.cert-seal-top {
+  font-size: 11px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 1px;
+}
+
+.cert-seal-mid {
+  font-size: 16px;
+  font-weight: 900;
+  color: #1e40af;
+}
+
+.cert-seal-bot {
+  font-size: 11px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+@media (max-width: 900px) {
+  .cert-sheet {
+    aspect-ratio: auto;
+  }
+
+  .cert-border-inner {
+    padding: 18px 16px;
+  }
+
+  .cert-title {
+    font-size: 28px;
+  }
+
+  .cert-name {
+    font-size: 32px;
+  }
+
+  .cert-meta {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+
+  .cert-footer {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+/* Fixed landscape export area for html2canvas */
+.cert-export-frame {
+  width: 1200px;
+  height: 675px; /* 16:9 */
+  background: #ffffff;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+/* Optional: keep design nicely centered */
+.cert-export-scale {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+/* Ensure the certificate fills the export frame */
+.cert-sheet {
+  width: 100%;
+  height: 100%;
+}

@@ -77,9 +77,20 @@ export default function TipDetail() {
 
   if (loading) {
     return (
-      <div className="tipdetail-page">
-        <Container className="tipdetail-container">
-          <h2 style={{ color: "white" }}>Loading...</h2>
+      <div className="tips-page">
+        <Container className="tips-container">
+          <div className="tips-loader">
+            <div className="loader-wrapper">
+              <div className="loader"></div>
+              <div className="letter-wrapper">
+                {"Loading...".split("").map((char, i) => (
+                  <span key={i} className="loader-letter">
+                    {char}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </Container>
       </div>
     );

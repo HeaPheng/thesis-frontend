@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import CareerCard from "../../components/CareerCard";
 import api from "../../lib/api";
+import { Container } from "react-bootstrap";
 import "./Careers.css";
 
 const Careers = () => {
@@ -129,7 +130,22 @@ const Careers = () => {
         </div>
 
         {loading ? (
-          <div className="careers-empty">{lang === "km" ? "កំពុងផ្ទុក..." : "Loading..."}</div>
+          <div className="tips-page">
+            <Container className="tips-container">
+              <div className="tips-loader">
+                <div className="loader-wrapper">
+                  <div className="loader"></div>
+                  <div className="letter-wrapper">
+                    {"Loading...".split("").map((char, i) => (
+                      <span key={i} className="loader-letter">
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </div>
         ) : (
           <>
             <div className="careers-grid">

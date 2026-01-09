@@ -5,11 +5,15 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import "./Auth.css";
 import api from "../../lib/api";
 import { getEmailHistory, saveEmailToHistory } from "../../lib/emailHistory";
+import { useUser } from "../../context/UserContext"; // ✅ ADD
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/dashboard";
+
+  // ✅ UserContext
+  const { refreshUser } = useUser();
 
   const [emailSuggestions, setEmailSuggestions] = useState(() => getEmailHistory());
   const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
@@ -96,21 +100,30 @@ export default function Login() {
 
     try {
       setLoading(true);
+
       const { data } = await api.post("/auth/login", { email, password });
 
+      // ✅ Store token
       localStorage.setItem("token", data.token);
+
+      // ✅ Attach token to axios
+      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+
+      // (Optional legacy storage — harmless to keep)
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userEmail", data.user?.email || email);
       localStorage.setItem("userName", data.user?.name || "Student");
+      localStorage.setItem("isLoggedIn", "true");
 
       const usedEmail = (data.user?.email || email || "").trim();
       localStorage.setItem("last_email", usedEmail);
-
       saveEmailToHistory(usedEmail);
       setEmailSuggestions(getEmailHistory());
 
+      // 🔥 THIS IS THE MISSING PIECE
+      await refreshUser();
       window.dispatchEvent(new Event("auth-changed"));
+
       navigate(from, { replace: true });
     } catch (err) {
       const msg =
@@ -132,7 +145,6 @@ export default function Login() {
   };
 
   return (
-    // ✅ SWAPPED STYLE: login uses "register" page styling (simple card)
     <div className="auth-shell auth-aurora auth-page register">
       <div className="auth-bg" aria-hidden="true">
         <span className="blob b1" />
@@ -140,7 +152,6 @@ export default function Login() {
         <span className="blob b3" />
       </div>
 
-      {/* ✅ simple card style */}
       <Card className="auth-card-simple">
         <h3 className="auth-title">{ui.title}</h3>
         <p className="auth-subtitle" style={{ textAlign: "center" }}>
@@ -160,7 +171,6 @@ export default function Login() {
         )}
 
         <Form onSubmit={handleLogin}>
-          {/* Email (register-style input with placeholder) */}
           <Form.Group className="mb-3 auth-input">
             <i className="bi bi-envelope"></i>
             <Form.Control
@@ -185,7 +195,6 @@ export default function Login() {
             </datalist>
           </Form.Group>
 
-          {/* Password */}
           <Form.Group className="mb-3 auth-input">
             <i className="bi bi-lock"></i>
             <Form.Control

@@ -13,7 +13,7 @@
   background: rgba(15, 23, 42, 0.92) !important;
   border: 1px solid #1e293b !important;
   border-radius: 18px !important;
-  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
 }
 
 .dash-hero {
@@ -29,9 +29,9 @@
   padding: 18px 18px;
   border-radius: 18px;
   border: 1px solid #1e293b;
-  background: radial-gradient(1200px 400px at 10% 0%, rgba(59,130,246,.25), transparent 55%),
-              radial-gradient(1000px 400px at 80% 0%, rgba(34,197,94,.15), transparent 50%),
-              rgba(15, 23, 42, 0.92);
+  background: radial-gradient(1200px 400px at 10% 0%, rgba(59, 130, 246, .25), transparent 55%),
+    radial-gradient(1000px 400px at 80% 0%, rgba(34, 197, 94, .15), transparent 50%),
+    rgba(15, 23, 42, 0.92);
 }
 
 .dash-badge {
@@ -41,7 +41,7 @@
   padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid #1e293b;
-  background: rgba(2,6,23,.55);
+  background: rgba(2, 6, 23, .55);
   color: #93c5fd;
   font-size: 13px;
   margin-bottom: 10px;
@@ -119,12 +119,12 @@
 }
 
 .dash-menu-item:hover {
-  background: rgba(59,130,246,.10);
+  background: rgba(59, 130, 246, .10);
 }
 
 .dash-menu-item.active {
-  background: rgba(59,130,246,.18);
-  border: 1px solid rgba(59,130,246,.25);
+  background: rgba(59, 130, 246, .18);
+  border: 1px solid rgba(59, 130, 246, .25);
 }
 
 .dash-menu-divider {
@@ -137,7 +137,7 @@
   margin-top: 6px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px dashed rgba(148,163,184,.35);
+  border: 1px dashed rgba(148, 163, 184, .35);
   color: #9ca3af;
   font-size: 13px;
   display: flex;
@@ -175,7 +175,7 @@
   padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid #1e293b;
-  background: rgba(2,6,23,.55);
+  background: rgba(2, 6, 23, .55);
   color: #a7f3d0;
   font-size: 13px;
 }
@@ -185,7 +185,7 @@
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid #1e293b;
-  background: rgba(2,6,23,.35);
+  background: rgba(2, 6, 23, .35);
 }
 
 .dash-progress-row {
@@ -210,7 +210,7 @@
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid #1e293b;
-  background: rgba(2,6,23,.35);
+  background: rgba(2, 6, 23, .35);
   align-items: center;
 }
 
@@ -220,8 +220,8 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(59,130,246,.15);
-  border: 1px solid rgba(59,130,246,.25);
+  background: rgba(59, 130, 246, .15);
+  border: 1px solid rgba(59, 130, 246, .25);
 }
 
 .dash-stat-icon i {
@@ -245,7 +245,7 @@
   padding: 18px;
   border-radius: 18px;
   border: 1px solid #1e293b;
-  background: rgba(2,6,23,.35);
+  background: rgba(2, 6, 23, .35);
   text-align: center;
 }
 
@@ -274,21 +274,22 @@
 }
 
 .dash-input {
-  background: rgba(2,6,23,.35) !important;
+  background: rgba(2, 6, 23, .35) !important;
   border: 1px solid #1e293b !important;
   color: #e5e7eb !important;
   border-radius: 12px !important;
 }
 
 .dash-input:focus {
-  box-shadow: 0 0 0 3px rgba(59,130,246,.18) !important;
-  border-color: rgba(59,130,246,.45) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .18) !important;
+  border-color: rgba(59, 130, 246, .45) !important;
 }
 
 .dash-form-actions {
   display: flex;
   justify-content: flex-end;
 }
+
 /* ===== Premium Continue Learning Section ===== */
 .dash-section-head {
   display: flex;
@@ -310,13 +311,13 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .dash-course-cover {
   position: relative;
   height: 140px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .dash-course-img {
@@ -333,17 +334,15 @@
   align-items: center;
   justify-content: center;
   font-size: 34px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .dash-course-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.05),
-    rgba(0,0,0,0.65)
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.05),
+      rgba(0, 0, 0, 0.65));
 }
 
 .dash-course-badge {
@@ -357,9 +356,9 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.92);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
 }
 
@@ -371,14 +370,15 @@
   font-size: 16px;
   padding: 6px 10px;
   border-radius: 12px;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: white;
   backdrop-filter: blur(10px);
 }
 
 .dash-course-body {
   padding: 14px;
+  background-color: rgb(11, 18, 32);
 }
 
 .dash-course-title {
@@ -404,9 +404,9 @@
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.92);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .dash-pill-success {
@@ -428,7 +428,7 @@
 .dash-course-progress-value {
   font-weight: 900;
   font-size: 12px;
-  color: rgba(255,255,255,0.92);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .dash-course-actions {
@@ -446,20 +446,12 @@
 .dash-course-secondary {
   border-radius: 12px;
 }
-/* ===== Tabs (Courses/Career) ===== */
-.dash-tab-switch {
-  display: flex;
-  gap: 6px;
-  background: rgba(255,255,255,0.06);
-  padding: 4px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
 
+/* ===== Tabs (Courses/Career) ===== */
 .dash-tab-btn {
   border: none;
   background: transparent;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   padding: 6px 14px;
   border-radius: 999px;
   font-weight: 800;
@@ -492,13 +484,13 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .dash-course-cover {
   position: relative;
   height: 140px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .dash-course-img {
@@ -515,13 +507,13 @@
   align-items: center;
   justify-content: center;
   font-size: 34px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .dash-course-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.65));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.65));
 }
 
 .dash-course-badge {
@@ -535,9 +527,9 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 900;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.92);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
 }
 
@@ -549,13 +541,15 @@
   font-size: 16px;
   padding: 6px 10px;
   border-radius: 12px;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: white;
   backdrop-filter: blur(10px);
 }
 
-.dash-course-body { padding: 14px; }
+.dash-course-body {
+  padding: 14px;
+}
 
 .dash-course-title {
   font-weight: 900;
@@ -579,9 +573,9 @@
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.92);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .dash-pill-success {
@@ -589,7 +583,9 @@
   border-color: rgba(38, 222, 129, 0.28);
 }
 
-.dash-course-progress { margin-top: 12px; }
+.dash-course-progress {
+  margin-top: 12px;
+}
 
 .dash-course-progress-row {
   display: flex;
@@ -601,7 +597,7 @@
 .dash-course-progress-value {
   font-weight: 900;
   font-size: 12px;
-  color: rgba(255,255,255,0.92);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .dash-course-actions {
@@ -616,7 +612,9 @@
   border-radius: 12px;
 }
 
-.dash-course-secondary { border-radius: 12px; }
+.dash-course-secondary {
+  border-radius: 12px;
+}
 
 .dash-cert-btn {
   border-radius: 12px;
@@ -629,7 +627,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .dash-career-top {
@@ -642,8 +640,8 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -662,11 +660,14 @@
   font-weight: 900;
   padding: 6px 10px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
-.dash-career-mid { margin-top: 12px; }
+.dash-career-mid {
+  margin-top: 12px;
+}
+
 .dash-career-actions {
   margin-top: 12px;
   display: flex;
@@ -675,7 +676,7 @@
 
 /* ===== Animated progress fill ===== */
 .dash-progress-anim .progress-bar {
-  transition: width 520ms cubic-bezier(.2,.9,.2,1);
+  transition: width 520ms cubic-bezier(.2, .9, .2, 1);
 }
 
 /* ===== Skeleton loaders ===== */
@@ -683,8 +684,8 @@
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .dash-skeleton::after {
@@ -692,17 +693,17 @@
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0.00),
-    rgba(255,255,255,0.12),
-    rgba(255,255,255,0.00)
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.00),
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.00));
   animation: dashShimmer 1.25s infinite;
 }
 
 @keyframes dashShimmer {
-  100% { transform: translateX(100%); }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .dash-skel-text {
@@ -710,7 +711,7 @@
   width: 54px;
   height: 18px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
 }
@@ -720,85 +721,356 @@
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0.00),
-    rgba(255,255,255,0.16),
-    rgba(255,255,255,0.00)
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.00),
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.00));
   animation: dashShimmer 1.25s infinite;
 }
-.dash-career-card.premium{
+
+.dash-career-card.premium {
   background: rgba(15, 23, 42, 0.95);
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   transition: transform .25s ease, box-shadow .25s ease;
   cursor: pointer;
 }
-.dash-career-card.premium:hover{
+
+.dash-career-card.premium:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 45px rgba(0,0,0,0.5);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
 }
 
-.career-cover{ position: relative; height: 140px; background: rgba(255,255,255,0.06); }
-.career-cover-img{ width: 100%; height: 100%; object-fit: cover; display: block; }
-.career-cover-fallback{
+.career-cover {
+  position: relative;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.career-cover-img {
+  width: 100%;
   height: 100%;
-  display:flex; align-items:center; justify-content:center;
-  font-size: 34px; color: rgba(255,255,255,0.75);
-  background: linear-gradient(135deg, rgba(34,211,238,0.25), rgba(99,102,241,0.25));
+  object-fit: cover;
+  display: block;
 }
-.career-cover-overlay{
-  position:absolute; inset:0;
-  background: linear-gradient(to top, rgba(2,6,23,0.92), rgba(2,6,23,0.15));
+
+.career-cover-fallback {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  color: rgba(255, 255, 255, 0.75);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(99, 102, 241, 0.25));
 }
-.career-cover-pct{
-  position:absolute; right: 12px; bottom: 10px;
-  font-weight: 800; font-size: 18px;
+
+.career-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.92), rgba(2, 6, 23, 0.15));
+}
+
+.career-cover-pct {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  font-weight: 800;
+  font-size: 18px;
   color: #38bdf8;
-  background: rgba(2,6,23,0.65);
+  background: rgba(2, 6, 23, 0.65);
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
 }
 
-.career-body{ padding: 14px 16px 16px; }
-.career-title{
-  font-size: 16px; font-weight: 800; color: #e5e7eb;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.career-body {
+  padding: 14px 16px 16px;
 }
-.career-sub{ margin-top: 2px; font-size: 12px; color: #9ca3af; }
 
-.career-progress{ margin-top: 12px; }
-.career-progress-row{ display:flex; justify-content:space-between; font-size:12px; opacity:.9; }
-.career-muted{ color:#9ca3af; }
-.career-pct-text{ color:#e5e7eb; font-weight:700; }
-
-.career-progress .progress{
-  height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08);
+.career-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.career-progress .progress-bar{
+
+.career-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.career-progress {
+  margin-top: 12px;
+}
+
+.career-progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  opacity: .9;
+}
+
+.career-muted {
+  color: #9ca3af;
+}
+
+.career-pct-text {
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.career-progress .progress {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.career-progress .progress-bar {
   background: linear-gradient(90deg, #22d3ee, #6366f1);
 }
 
-.career-actions{ margin-top: 14px; display:flex; gap:10px; }
-.career-cta{
+.career-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.career-cta {
   flex: 1;
   border-radius: 12px;
   padding: 10px 14px;
   font-weight: 800;
-  display:flex; align-items:center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: linear-gradient(135deg, #22d3ee, #6366f1);
   border: none;
   color: #020617;
   transition: filter .2s ease, transform .15s ease;
 }
-.career-cta:hover{ filter: brightness(1.05); transform: translateY(-1px); }
 
-.career-secondary{
+.career-cta:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.career-secondary {
   border-radius: 12px;
   padding: 10px 14px;
+}
+
+/* ===================== STREAK TIER STYLES ===================== */
+/* Target: <div className="dash-mini-card dash-mini-streak tier-xxx"> */
+
+.dash-mini-streak {
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle shine */
+.dash-mini-streak::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.12), transparent 55%);
+}
+
+.dash-mini-streak:hover::before {
+  opacity: 1;
+}
+
+/* Base pill a bit nicer inside streak card */
+.dash-mini-streak .dash-pill {
+  white-space: nowrap;
+}
+
+/* ----- NONE ----- */
+.dash-mini-streak.tier-none {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+/* ----- BRONZE ----- */
+.dash-mini-streak.tier-bronze {
+  border: 1px solid rgba(205, 127, 50, 0.25);
+  box-shadow: 0 0 0 1px rgba(205, 127, 50, 0.08), 0 14px 34px rgba(205, 127, 50, 0.08);
+}
+
+.dash-mini-streak.tier-bronze .dash-pill {
+  border: 1px solid rgba(205, 127, 50, 0.22);
+  background: rgba(205, 127, 50, 0.10);
+}
+
+/* ----- SILVER ----- */
+.dash-mini-streak.tier-silver {
+  border: 1px solid rgba(192, 192, 192, 0.22);
+  box-shadow: 0 0 0 1px rgba(192, 192, 192, 0.08), 0 14px 34px rgba(192, 192, 192, 0.08);
+}
+
+.dash-mini-streak.tier-silver .dash-pill {
+  border: 1px solid rgba(192, 192, 192, 0.20);
+  background: rgba(192, 192, 192, 0.10);
+}
+
+/* ----- GOLD ----- */
+.dash-mini-streak.tier-gold {
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.08), 0 14px 34px rgba(255, 215, 0, 0.10);
+}
+
+.dash-mini-streak.tier-gold .dash-pill {
+  border: 1px solid rgba(255, 215, 0, 0.20);
+  background: rgba(255, 215, 0, 0.10);
+}
+
+/* ----- PLATINUM ----- */
+.dash-mini-streak.tier-platinum {
+  border: 1px solid rgba(120, 220, 255, 0.22);
+  box-shadow: 0 0 0 1px rgba(120, 220, 255, 0.08), 0 14px 34px rgba(120, 220, 255, 0.10);
+}
+
+.dash-mini-streak.tier-platinum .dash-pill {
+  border: 1px solid rgba(120, 220, 255, 0.22);
+  background: rgba(120, 220, 255, 0.10);
+}
+
+/* ----- LEGEND ----- */
+.dash-mini-streak.tier-legend {
+  border: 1px solid rgba(255, 120, 210, 0.22);
+  box-shadow: 0 0 0 1px rgba(255, 120, 210, 0.08), 0 16px 38px rgba(255, 120, 210, 0.12);
+}
+
+.dash-mini-streak.tier-legend .dash-pill {
+  border: 1px solid rgba(255, 120, 210, 0.22);
+  background: rgba(255, 120, 210, 0.10);
+}
+
+/* optional: make the icon pop a bit */
+.dash-mini-streak i.bi {
+  opacity: 0.95;
+  transform: translateY(0.5px);
+}
+
+/* ===== Dashboard tab switch (Courses / Career) ===== */
+.dash-tab-switch {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+}
+
+/* same style as lb2-switch */
+.dash-tab-toggle {
+  --_switch-bg-clr: rgba(2, 6, 23, .35);
+  --_switch-padding: 4px;
+  --_slider-bg-clr: rgba(12, 74, 110, 0.65);
+  --_slider-bg-clr-on: rgba(12, 74, 110, 1);
+  --_label-padding: 0.7rem 1.4rem;
+  --_switch-easing: cubic-bezier(0.47, 1.64, 0.41, 0.8);
+
+  color: white;
+  width: fit-content;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: center;
+
+  position: relative;
+  border-radius: 9999px;
+  cursor: pointer;
+  isolation: isolate;
+
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.dash-tab-toggle input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.dash-tab-toggle>span {
+  display: grid;
+  place-content: center;
+  transition: opacity 300ms ease-in-out 150ms;
+  padding: var(--_label-padding);
+  user-select: none;
+}
+
+.dash-tab-toggle::before,
+.dash-tab-toggle::after {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+  transition: inset 150ms ease-in-out;
+}
+
+/* slider */
+.dash-tab-toggle::before {
+  background-color: var(--_slider-bg-clr);
+  inset: var(--_switch-padding) 50% var(--_switch-padding) var(--_switch-padding);
+  transition: inset 500ms var(--_switch-easing), background-color 500ms ease-in-out;
+  z-index: -1;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.3);
+}
+
+/* background */
+.dash-tab-toggle::after {
+  background-color: var(--_switch-bg-clr);
+  inset: 0;
+  z-index: -2;
+}
+
+/* focus ring-ish */
+.dash-tab-toggle:focus-within::after {
+  inset: -0.25rem;
+}
+
+/* hover effects */
+.dash-tab-toggle:has(input:checked):hover>span:first-of-type,
+.dash-tab-toggle:has(input:not(:checked)):hover>span:last-of-type {
+  opacity: 1;
+  transition-delay: 0ms;
+  transition-duration: 100ms;
+}
+
+.dash-tab-toggle:has(input:checked):hover::before {
+  inset: var(--_switch-padding) var(--_switch-padding) var(--_switch-padding) 45%;
+}
+
+.dash-tab-toggle:has(input:not(:checked)):hover::before {
+  inset: var(--_switch-padding) 45% var(--_switch-padding) var(--_switch-padding);
+}
+
+/* checked (Career) */
+.dash-tab-toggle:has(input:checked)::before {
+  background-color: var(--_slider-bg-clr-on);
+  inset: var(--_switch-padding) var(--_switch-padding) var(--_switch-padding) 50%;
+}
+
+/* opacity states */
+.dash-tab-toggle>span:last-of-type,
+.dash-tab-toggle>input:checked+span:first-of-type {
+  opacity: 0.75;
+}
+
+.dash-tab-toggle>input:checked~span:last-of-type {
+  opacity: 1;
 }

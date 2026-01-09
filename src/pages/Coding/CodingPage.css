@@ -6,92 +6,78 @@
   max-width: 100%;
   background: #000;
 
-  /* stop page scrolling */
   height: 100vh;
   overflow: hidden;
   overflow-x: hidden;
 }
 
-/* Make the wrapper close to edges */
-.coding-wrapper {
-  padding: 6px 6px !important;
+/* Wrapper close to edges (but we full-bleed anyway) */
+.lesson-content-wrapper.coding-wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
 }
 
-/* The shell fills between Lesson header and Lesson footer
-   (adjust numbers if your header/footer heights differ)
-*/
+.lesson-content.coding-content {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* Full-bleed container: escapes lesson wrapper padding */
+.coding-fullbleed {
+  width: calc(100vw - 48px); /* lesson wrapper has 24px left/right */
+  margin-left: -24px;
+  margin-right: -24px;
+}
+
+/* Shell fills between Lesson header and Lesson footer */
 .coding-shell {
   height: calc(100vh - 60px - 90px - 12px);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 0; /* important for inner scroll */
-}
-
-.coding-title {
-  margin: 0;
+  min-height: 0;
 }
 
 /* =========================
-   3 column layout (wider left/right)
+   DESKTOP: 3 column layout
 ========================= */
 .coding-3col {
   display: grid;
-  grid-template-columns: 420px 1fr 460px; /* left wider, middle smaller, right wider */
+  grid-template-columns: 420px 2fr 1fr;
   gap: 12px;
 
   align-items: stretch;
   width: 100%;
 
   flex: 1;
-  min-height: 0; /* important */
-  margin-top: 0;
+  min-height: 0;
 }
 
-/* Responsive stack */
-@media (max-width: 1100px) {
-  .coding-page {
-    height: auto;
-    overflow: auto;
-  }
-  .coding-shell {
-    height: auto;
-  }
-  .coding-3col {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
+/* Prevent overflow (Monaco can force width) */
+.coding-left,
+.coding-middle,
+.coding-right {
+  min-width: 0;
 }
 
 /* =========================
-   Panels
+   PANELS
 ========================= */
 .coding-panel {
-  border: 1px solid #1e293b;
+  border: 1px solid rgba(30, 41, 59, 0.95);
   border-radius: 14px;
-  background: #0b1220;
+  background: radial-gradient(1200px 600px at 10% 0%, rgba(59, 130, 246, 0.10), transparent 55%),
+    linear-gradient(180deg, #0b1220 0%, #070b14 100%);
   overflow: hidden;
 
   display: flex;
   flex-direction: column;
-  min-height: 0; /* important */
+  min-height: 0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
 }
 
-.coding-panel-title {
-  padding: 10px 12px;
-  border-bottom: 1px solid #1e293b;
-  color: #e2e8f0;
-  font-size: 14px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  background: rgba(15, 23, 42, 0.7);
-  flex: 0 0 auto;
-}
-
-/* Each panel body scrolls (not whole page) */
 .coding-panel-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -100,10 +86,97 @@
 }
 
 /* =========================
-   Left: Instructions
+   Top bars (screenshot-like)
+========================= */
+.coding-tabbar,
+.coding-editor-top,
+.coding-terminal-top {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.95);
+  background: rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.coding-editor-top,
+.coding-terminal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.coding-tabbar-btn {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #60a5fa;
+  font-weight: 800;
+  padding: 6px 4px;
+  cursor: default;
+}
+
+.coding-tabbar-btn.active {
+  border-bottom: 2px solid rgba(59, 130, 246, 0.9);
+}
+
+.coding-editor-top-left,
+.coding-terminal-top-left {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: #e2e8f0;
+  font-weight: 800;
+}
+
+.coding-editor-top-right,
+.coding-terminal-top-right {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.coding-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.coding-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.coding-icon-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.coding-lang-pill {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+}
+
+/* =========================
+   LEFT: Instructions
 ========================= */
 .coding-instructions-scroll {
   padding: 12px;
+}
+
+.coding-instructions-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #e2e8f0;
 }
 
 .coding-md {
@@ -118,6 +191,7 @@
   margin-bottom: 6px;
   color: #e2e8f0;
   font-size: 13px;
+  font-weight: 800;
 }
 
 .coding-list {
@@ -128,22 +202,28 @@
   line-height: 1.6;
 }
 
-/* =========================
-   Middle: Editor
-========================= */
-.coding-editor-title {
-  gap: 10px;
+.coding-note {
+  margin-top: 12px;
+  opacity: 0.85;
+  font-size: 13px;
+  color: #93c5fd;
 }
 
-.coding-tabs {
+/* =========================
+   MIDDLE: Editor
+========================= */
+.coding-editor-tabsRow {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.95);
   display: flex;
   gap: 8px;
   align-items: center;
+  background: rgba(2, 6, 23, 0.35);
 }
 
 .coding-tab {
-  border: 1px solid #1e293b;
-  background: #0b1220;
+  border: 1px solid rgba(30, 41, 59, 0.95);
+  background: rgba(2, 6, 23, 0.35);
   color: #cbd5e1;
   font-size: 13px;
   padding: 6px 10px;
@@ -153,36 +233,24 @@
 }
 
 .coding-tab:hover {
-  background: rgba(30, 41, 59, 0.35);
+  background: rgba(59, 130, 246, 0.12);
 }
 
 .coding-tab.active {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.6);
+  background: rgba(59, 130, 246, 0.20);
+  border-color: rgba(59, 130, 246, 0.55);
   color: #e2e8f0;
 }
 
-.coding-run-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* language pill (new) */
-.coding-lang-pill {
-  font-size: 12px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-}
-
-/* Editor body: monaco handles its own scroll */
 .coding-editor-body {
   padding: 0;
   overflow: hidden;
-  background: #0f172a;
+  background: #0b1020;
+  min-width: 0;
+
+  /* ✅ critical: allows Monaco to actually measure height */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Ensure Monaco fills available height */
@@ -196,8 +264,35 @@
   overscroll-behavior: contain;
 }
 
+/* Run bar */
+.coding-runbar {
+  border-top: 1px solid rgba(30, 41, 59, 0.95);
+  padding: 12px;
+  background: rgba(2, 6, 23, 0.45);
+  flex: 0 0 auto;
+}
+
+.coding-runbar-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.18), rgba(59, 130, 246, 0.10));
+  color: #e2e8f0;
+  font-weight: 900;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s ease;
+}
+
+.coding-runbar-btn:hover {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.14));
+}
+
 /* =========================
-   Right: Output + Console + Actions
+   RIGHT: Output / Preview / Console
 ========================= */
 .coding-right-body {
   padding: 0;
@@ -207,27 +302,67 @@
   min-height: 0;
 }
 
-/* Preview takes remaining space */
-.coding-preview {
+/* Preview block */
+.coding-terminal-window {
   padding: 12px;
-  padding-bottom: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.coding-terminal-windowbar {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 10px;
+  width: fit-content;
+}
+
+.coding-terminal-windowbar .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.coding-terminal-windowbar .dot.red {
+  background: #ef4444;
+}
+.coding-terminal-windowbar .dot.yellow {
+  background: #f59e0b;
+}
+.coding-terminal-windowbar .dot.green {
+  background: #22c55e;
+}
+
+.coding-preview {
+  padding: 8px;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
 }
 
+.coding-preview-big {
+  padding: 8px !important;
+}
+
 .coding-iframe {
   width: 100%;
   height: 100%;
+  display: block;
   border-radius: 12px;
-  border: 1px solid #1e293b;
+  border: 1px solid rgba(30, 41, 59, 0.95);
   background: white;
 }
 
-/* Console fixed height, internal scroll */
+/* Console */
 .coding-console {
-  border-top: 1px solid #1e293b;
-  background: #070b14;
+  border-top: 1px solid rgba(30, 41, 59, 0.95);
+  background: #060914;
 
   flex: 0 0 240px;
   display: flex;
@@ -235,11 +370,18 @@
   min-height: 0;
 }
 
+.coding-console-full {
+  flex: 1 1 auto !important;
+  min-height: 0;
+  border-top: none;
+}
+
 .coding-console-title {
   padding: 10px 12px;
   color: #e2e8f0;
   font-size: 13px;
-  border-bottom: 1px solid #1e293b;
+  font-weight: 800;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.95);
   flex: 0 0 auto;
 }
 
@@ -283,7 +425,6 @@
   white-space: pre-wrap;
 }
 
-/* log colors */
 .coding-console-line.warn .coding-console-msg {
   color: #fbbf24;
 }
@@ -294,14 +435,175 @@
   color: #93c5fd;
 }
 
-/* Actions pinned at bottom of right panel */
+.coding-console-exit {
+  padding: 10px 12px;
+  border-top: 1px solid rgba(30, 41, 59, 0.95);
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Actions pinned at bottom */
 .coding-actions {
   padding: 12px;
   display: flex;
   justify-content: space-between;
   gap: 10px;
-
-  border-top: 1px solid #1e293b;
-  background: rgba(15, 23, 42, 0.5);
+  border-top: 1px solid rgba(30, 41, 59, 0.95);
+  background: rgba(2, 6, 23, 0.55);
   flex: 0 0 auto;
 }
+
+/* =========================
+   MOBILE LAYOUT (Tabs)
+========================= */
+.coding-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+}
+
+.coding-mobile-topTabs {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(30, 41, 59, 0.95);
+  background: rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(8px);
+}
+
+.coding-mobile-tab {
+  flex: 1 1 50%;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(30, 41, 59, 0.95);
+  background: rgba(15, 23, 42, 0.45);
+  color: #cbd5e1;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.coding-mobile-tab.active {
+  background: rgba(59, 130, 246, 0.22);
+  border-color: rgba(59, 130, 246, 0.55);
+  color: #e2e8f0;
+}
+
+.coding-mobile-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Instructions tab: take full available height; scroll inside panel */
+.coding-mobile-instructions {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Coding tab split: editor + output */
+.coding-mobile-split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ✅ Give Monaco real height on mobile */
+.coding-mobile-editor {
+  flex: 1 1 auto;
+  min-height: 320px;     /* ✅ real height so editor shows */
+  height: 60vh;          /* ✅ consistent */
+  min-height: 0;         /* ✅ allows inner scroll, but keep height via vh */
+}
+
+/* Make the panel fill this slot */
+.coding-mobile-editor .coding-panel {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Output slot */
+.coding-mobile-output {
+  flex: 1 1 auto;
+  height: 48vh;
+  min-height: 260px;
+  min-height: 0;
+}
+
+.coding-mobile-output .coding-panel {
+  height: 100%;
+  min-height: 0;
+}
+
+
+/* Mobile console smaller than preview */
+.coding-mobile .coding-terminal-window {
+  padding: 10px;
+}
+.coding-mobile .coding-console {
+  flex: 0 0 170px;
+}
+.coding-mobile .coding-actions {
+  padding: 10px;
+}
+
+/* =========================
+   LANDSCAPE / SHORT HEIGHT polish
+========================= */
+@media (max-height: 520px) {
+  .coding-shell {
+    height: calc(100vh - 60px - 90px - 8px);
+    gap: 10px;
+  }
+
+  .coding-mobile-topTabs {
+    padding: 8px;
+  }
+
+  .coding-mobile-tab {
+    height: 40px;
+  }
+
+  .coding-runbar {
+    padding: 10px;
+  }
+
+  .coding-runbar-btn {
+    height: 42px;
+  }
+
+  .coding-mobile .coding-console {
+    flex: 0 0 130px;
+  }
+}
+
+/* =========================
+   Break full-bleed on small screens to avoid horizontal scroll
+========================= */
+@media (max-width: 1100px) {
+  .coding-fullbleed {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* =========================
+   If you want desktop to stack at very small widths
+========================= */
+@media (max-width: 900px) {
+  .coding-3col {
+    grid-template-columns: 1fr;
+  }
+}
+.coding-mobile-body { display:flex; flex-direction:column; min-height:0; flex:1; }
+.coding-mobile-split { display:flex; flex-direction:column; gap:12px; min-height:0; flex:1; }
+.coding-mobile-editor { flex: 1 1 55%; min-height: 240px; }
+.coding-mobile-output { flex: 1 1 45%; min-height: 220px; }

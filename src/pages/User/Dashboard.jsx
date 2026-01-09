@@ -10,10 +10,71 @@ import CertificateSheet from "../../components/CertificateSheet";
 const CACHE_KEY = "dashboard_cache_v1";
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const DASHBOARD_SHOW_COUNT = 2;
-const MIN_REFRESH_GAP_MS = 1500;
+// ✅ Increased gap
+const MIN_REFRESH_GAP_MS = 5000; // 5 seconds minimum between refreshes
 
 const CAREERS_CACHE_KEY = "dashboard_careers_cache_v1";
 const CAREERS_CACHE_TTL_MS = 10 * 60 * 1000;
+
+/* ===================== ✅ XP/STREAK CACHE ===================== */
+const XP_STREAK_CACHE_KEY = "dashboard_xp_streak_v1";
+const XP_STREAK_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function readXpStreakCache() {
+  try {
+    const raw = localStorage.getItem(XP_STREAK_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const ts = parsed?.updatedAt ? new Date(parsed.updatedAt).getTime() : 0;
+    if (!ts || Date.now() - ts > XP_STREAK_CACHE_TTL_MS) return null;
+    return { xp: Number(parsed.xp || 0), streak: Number(parsed.streak || 0) };
+  } catch {
+    return null;
+  }
+}
+
+function writeXpStreakCache(xp, streak) {
+  try {
+    localStorage.setItem(
+      XP_STREAK_CACHE_KEY,
+      JSON.stringify({
+        xp: Number(xp || 0),
+        streak: Number(streak || 0),
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  } catch {}
+}
+
+/* ===================== USER DATA CACHE ===================== */
+const USER_CACHE_KEY = "dashboard_user_v1";
+const USER_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function readUserCache() {
+  try {
+    const raw = localStorage.getItem(USER_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const ts = parsed?.updatedAt ? new Date(parsed.updatedAt).getTime() : 0;
+    if (!ts || Date.now() - ts > USER_CACHE_TTL_MS) return null;
+    return { name: parsed.name || "", email: parsed.email || "" };
+  } catch {
+    return null;
+  }
+}
+
+function writeUserCache(name, email) {
+  try {
+    localStorage.setItem(
+      USER_CACHE_KEY,
+      JSON.stringify({
+        name: String(name || ""),
+        email: String(email || ""),
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  } catch {}
+}
 
 /* ===================== CACHE ===================== */
 function readCache() {
@@ -104,6 +165,19 @@ function badgeIconFromPct(pct) {
   if (p >= 70) return "bi-rocket-takeoff";
   if (p >= 35) return "bi-lightning-charge-fill";
   return "bi-play-circle-fill";
+}
+
+/* ===================== ✅ STREAK BADGE (FRONTEND ONLY) ===================== */
+function getStreakBadge(streakCount = 0, ui) {
+  const s = Math.max(0, Number(streakCount || 0));
+
+  if (s >= 30) return { tier: "legend", icon: "bi-fire", label: ui.streakLegend };
+  if (s >= 14) return { tier: "platinum", icon: "bi-gem", label: ui.streakPlatinum };
+  if (s >= 7) return { tier: "gold", icon: "bi-trophy-fill", label: ui.streakGold };
+  if (s >= 3) return { tier: "silver", icon: "bi-award-fill", label: ui.streakSilver };
+  if (s >= 1) return { tier: "bronze", icon: "bi-award", label: ui.streakBronze };
+
+  return { tier: "none", icon: "bi-fire", label: ui.streakStart };
 }
 
 /* ===================== SKELETONS ===================== */
@@ -381,7 +455,6 @@ export default function Dashboard() {
   // ✅ language reactive (en / km)
   const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
 
-
   useEffect(() => {
     const onLang = (e) => {
       const next = e?.detail?.lang;
@@ -392,21 +465,16 @@ export default function Dashboard() {
     return () => window.removeEventListener("app-lang-changed", onLang);
   }, []);
 
-  const pickText = useCallback(
-    (en, km) => (lang === "km" ? km || en || "" : en || km || ""),
-    [lang]
-  );
+  const pickText = useCallback((en, km) => (lang === "km" ? km || en || "" : en || km || ""), [lang]);
 
   const ui = useMemo(() => {
     if (lang === "km") {
       return {
-        // badges
         badgeCompleted: "បានបញ្ចប់",
         badgeAlmost: "ជិតរួច",
         badgeInProgress: "កំពុងរៀន",
         badgeGettingStarted: "ចាប់ផ្តើម",
 
-        // common
         progress: "វឌ្ឍនភាព",
         continue: "បន្ត",
         details: "ព័ត៌មានលម្អិត",
@@ -418,19 +486,20 @@ export default function Dashboard() {
         downloadCertificate: "ទាញយកវិញ្ញាបនបត្រ",
         untitled: "មិនមានចំណងជើង",
 
-        // hero
         studentSpace: "ផ្ទាំងគ្រប់គ្រង",
         welcomeBack: (name) => `សូមស្វាគមន៍មកវិញ, ${name} 👋`,
-        updated: (s) => `ធ្វើបច្ចុប្បន្នភាព ${s}`,
-
-
-        // mini cards
         xp: "ពិន្ទុ XP",
         xpSub: "ទទួល XP ដោយបញ្ចប់ជំពូក",
         streak: "ថ្ងៃជាប់គ្នា",
         streakSub: "បន្តរៀនរាល់ថ្ងៃ",
 
-        // tabs/panels
+        streakStart: "ចាប់ផ្តើមស្ទ្រីក",
+        streakBronze: "ស្ទ្រីក Bronze",
+        streakSilver: "ស្ទ្រីក Silver",
+        streakGold: "ស្ទ្រីក Gold",
+        streakPlatinum: "ស្ទ្រីក Platinum",
+        streakLegend: "ស្ទ្រីក Legend",
+
         showsOnly: `បង្ហាញតែ ${DASHBOARD_SHOW_COUNT} វគ្គចុងក្រោយ។`,
         overallProgress: "វឌ្ឍនភាពសរុប",
         enrolledCourses: "វគ្គបានចុះឈ្មោះ",
@@ -447,16 +516,14 @@ export default function Dashboard() {
         browseCourses: "មើលវគ្គសិក្សា",
         browseCareers: "មើល​ជំនាញទាំងអស់",
 
-        // empty
         noEnrolledTitle: "មិនទាន់មានវគ្គបានចុះឈ្មោះទេ",
         noEnrolledSub: "ចុះឈ្មោះវគ្គមួយ ហើយវានឹងបង្ហាញនៅទីនេះ។",
         exploreCourses: "ស្វែងរកវគ្គសិក្សា",
 
         noCareerTitle: "មិនទាន់មានវឌ្ឍនភាពជំនាញទេ",
         noCareerSub: "ចុះឈ្មោះវគ្គនៅក្នុងជំនាញ ដើម្បីឃើញវានៅទីនេះ។",
-        exploreCareers: "ស្វែងរកជំនាញទ",
+        exploreCareers: "ស្វែងរកជំនាញ",
 
-        // profile
         profile: "ប្រវត្តិប្រូហ្វាល់",
         manageAccount: "គ្រប់គ្រងគណនីរបស់អ្នក",
         signedInAs: "បានចូលជាអ្នកប្រើ",
@@ -464,7 +531,6 @@ export default function Dashboard() {
         settings: "ការកំណត់",
         account: "គណនី",
 
-        // errors
         failedAccount: "បរាជ័យក្នុងការផ្ទុកគណនី។",
         certNotReady: "វិញ្ញាបនបត្រមិនទាន់រួចទេ។",
         certPreviewNotReady: "មើលមុនវិញ្ញាបនបត្រមិនទាន់រួច។",
@@ -472,11 +538,12 @@ export default function Dashboard() {
         dashLoadFail: "បរាជ័យក្នុងការផ្ទុកទិន្នន័យ Dashboard។",
         careerLoadFail: "បរាជ័យក្នុងការផ្ទុកវឌ្ឍនភាពជំនាញ។",
 
-        // careers  
         careerPath: "ជំនាញ",
         careerSub: (done, total) => `${done} / ${total} វគ្គសិក្សាបានបញ្ចប់`,
         continuePath: "បន្តជំនាញ",
         continueNextPath: "បន្តជំនាញបន្ទាប់",
+
+        continueLast: "បន្តពីកន្លែងចុងក្រោយរបស់អ្នក",
       };
     }
 
@@ -499,12 +566,18 @@ export default function Dashboard() {
 
       studentSpace: "Student Space",
       welcomeBack: (name) => `Welcome back, ${name} 👋`,
-      updated: (s) => `Updated ${s}`,
 
       xp: "XP",
       xpSub: "Earn XP by finishing units",
       streak: "Streak",
       streakSub: "Keep learning daily",
+
+      streakStart: "Start a streak",
+      streakBronze: "Bronze Streak",
+      streakSilver: "Silver Streak",
+      streakGold: "Gold Streak",
+      streakPlatinum: "Platinum Streak",
+      streakLegend: "Legend Streak",
 
       showsOnly: `Shows only your last ${DASHBOARD_SHOW_COUNT} courses.`,
       overallProgress: "Overall Progress",
@@ -515,7 +588,6 @@ export default function Dashboard() {
       continueLearning: "Continue Learning",
       careerProgress: "Career Progress",
 
-      lastTwoHint: "These are the last 2 recently learned courses (backend sorted).",
       careerHint: "Shows career paths where you enrolled in at least one course.",
 
       viewAllEnrolled: "View all enrolled",
@@ -548,14 +620,23 @@ export default function Dashboard() {
       careerSub: (done, total) => `${done} / ${total} courses completed`,
       continuePath: "Continue Path",
       continueNextPath: "Continue Next Path",
+
+      continueLast: "Continue from where you left off",
     };
   }, [lang]);
 
   const [active, setActive] = useState("learning");
   const [learningTab, setLearningTab] = useState("courses");
 
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  // ✅ Load user data from cache immediately
+  const [email, setEmail] = useState(() => {
+    const cached = readUserCache();
+    return cached?.email || "";
+  });
+  const [name, setName] = useState(() => {
+    const cached = readUserCache();
+    return cached?.name || "Student";
+  });
 
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingDash, setLoadingDash] = useState(true);
@@ -564,13 +645,18 @@ export default function Dashboard() {
   const [statsErr, setStatsErr] = useState(null);
 
   const [continueCourses, setContinueCourses] = useState([]);
-  const [stats, setStats] = useState({
-    enrolled: 0,
-    completedUnits: 0,
-    certificates: 0,
-    progress: 0,
-    streak: 0,
-    xp: 0,
+
+  // ✅ Instant load xp/streak from cache
+  const [stats, setStats] = useState(() => {
+    const cached = readXpStreakCache();
+    return {
+      enrolled: 0,
+      completedUnits: 0,
+      certificates: 0,
+      progress: 0,
+      streak: cached?.streak || 0,
+      xp: cached?.xp || 0,
+    };
   });
 
   const [careers, setCareers] = useState([]);
@@ -581,10 +667,32 @@ export default function Dashboard() {
   const [downloading, setDownloading] = useState({});
   const isMountedRef = useRef(true);
   const lastRefreshRef = useRef(0);
-  const [cacheStamp, setCacheStamp] = useState(() => readCache()?.updatedAt || "");
+
+  // ✅ request dedupe refs
+  const dashboardLoadingRef = useRef(false);
+  const careersLoadingRef = useRef(false);
 
   const [certPreview, setCertPreview] = useState(null);
   const certRef = useRef(null);
+
+  /* ===================== ✅ Activity ping (updates streak) ===================== */
+  const pingActivity = useCallback(async () => {
+    try {
+      const { data } = await api.post("/activity/ping");
+      const nextXp = Number(data?.xp_balance ?? 0) || 0;
+      const nextStreak = Number(data?.streak_count ?? 0) || 0;
+
+      setStats((prev) => {
+        if (prev.xp !== nextXp || prev.streak !== nextStreak) {
+          writeXpStreakCache(nextXp, nextStreak);
+          return { ...prev, xp: nextXp, streak: nextStreak };
+        }
+        return prev;
+      });
+    } catch {
+      // Silent fail
+    }
+  }, []);
 
   /* ===== keep dashboard in sync with ProgressSync cache writes ===== */
   useEffect(() => {
@@ -592,8 +700,19 @@ export default function Dashboard() {
       const cached = readCache();
       if (cached?.continueCourses && cached?.stats) {
         setContinueCourses(cached.continueCourses);
-        setStats(cached.stats);
-        setCacheStamp(cached.updatedAt || "");
+
+        setStats((prev) => {
+          const nextXp = prev.xp ?? cached.stats.xp ?? 0;
+          const nextStreak = prev.streak ?? cached.stats.streak ?? 0;
+
+          writeXpStreakCache(nextXp, nextStreak);
+
+          return {
+            ...cached.stats,
+            xp: nextXp,
+            streak: nextStreak,
+          };
+        });
       }
     };
 
@@ -615,14 +734,45 @@ export default function Dashboard() {
     isMountedRef.current = true;
 
     (async () => {
-      setLoadingUser(true);
+      // ✅ Check cache first
+      const cached = readUserCache();
+      if (cached?.name && cached?.email) {
+        setName(cached.name);
+        setEmail(cached.email);
+        setLoadingUser(false);
+      } else {
+        setLoadingUser(true);
+      }
+
       setErr(null);
       try {
         const { data } = await api.get("/auth/me");
         if (!isMountedRef.current) return;
 
-        setName(data?.user?.name || data?.name || "Student");
-        setEmail(data?.user?.email || data?.email || "student@example.com");
+        const userName = data?.user?.name || data?.name || "Student";
+        const userEmail = data?.user?.email || data?.email || "student@example.com";
+
+        setName(userName);
+        setEmail(userEmail);
+
+        // ✅ Cache user data
+        writeUserCache(userName, userEmail);
+
+        // ✅ hydrate xp/streak from /auth/me (if present) AND cache it
+        const u = data?.user || data || {};
+        const nextXp = Number(u?.xp_balance ?? u?.xp ?? 0) || 0;
+        const nextStreak = Number(u?.streak_count ?? u?.streak ?? 0) || 0;
+
+        setStats((prev) => {
+          if (prev.xp !== nextXp || prev.streak !== nextStreak) {
+            writeXpStreakCache(nextXp, nextStreak);
+            return { ...prev, xp: nextXp, streak: nextStreak };
+          }
+          return prev;
+        });
+
+        // ✅ ping activity to update streak daily
+        await pingActivity();
       } catch (e) {
         const status = e?.response?.status;
         if (!isMountedRef.current) return;
@@ -640,7 +790,7 @@ export default function Dashboard() {
     return () => {
       isMountedRef.current = false;
     };
-  }, [navigate, ui.failedAccount]);
+  }, [navigate, ui.failedAccount, pingActivity]);
 
   /* ===== download certificate ===== */
   const onDownloadCert = useCallback(
@@ -699,17 +849,37 @@ export default function Dashboard() {
   /* ===== dashboard loader ===== */
   const loadDashboard = useCallback(
     async ({ force = false, silent = false } = {}) => {
+      // ✅ request dedupe
+      if (dashboardLoadingRef.current && !force) {
+        console.log("Dashboard already loading, skipping duplicate request");
+        return;
+      }
+
       const now = Date.now();
       if (!force && now - lastRefreshRef.current < MIN_REFRESH_GAP_MS) return;
       lastRefreshRef.current = now;
+
+      dashboardLoadingRef.current = true;
 
       setStatsErr(null);
 
       const cached = !force ? readCache() : null;
       if (cached?.continueCourses && cached?.stats) {
         setContinueCourses(cached.continueCourses);
-        setStats(cached.stats);
-        setCacheStamp(cached.updatedAt || "");
+
+        setStats((prev) => {
+          const nextXp = prev.xp ?? cached.stats.xp ?? 0;
+          const nextStreak = prev.streak ?? cached.stats.streak ?? 0;
+
+          writeXpStreakCache(nextXp, nextStreak);
+
+          return {
+            ...cached.stats,
+            xp: nextXp,
+            streak: nextStreak,
+          };
+        });
+
         if (silent) setLoadingDash(false);
       }
 
@@ -743,7 +913,7 @@ export default function Dashboard() {
             return {
               courseKey,
               title: c?.title || ui.untitled,
-              title_km: c?.title_km || null, // ✅ if API provides
+              title_km: c?.title_km || null,
               thumbnail: c?.thumbnail_url || "",
               completedLessons,
               totalLessons,
@@ -787,42 +957,72 @@ export default function Dashboard() {
           ? Math.round(allMapped.reduce((s, x) => s + (x.progressPct || 0), 0) / enrolled)
           : 0;
 
+        // ✅ preserve xp/streak (do NOT reset)
+        const xpKeep = Number(stats.xp || 0);
+        const streakKeep = Number(stats.streak || 0);
+
         const nextStats = {
           enrolled,
           completedUnits: completedUnitsSum,
           certificates,
           progress,
-          xp: 0,
-          streak: 0,
+          xp: xpKeep,
+          streak: streakKeep,
         };
 
         if (!isMountedRef.current) return;
 
         setContinueCourses(mappedRecent);
-        setStats(nextStats);
 
-        writeCache({ continueCourses: mappedRecent, stats: nextStats });
-        const fresh = readCache();
-        setCacheStamp(fresh?.updatedAt || "");
+        setStats((prev) => {
+          const finalXp = prev.xp ?? xpKeep;
+          const finalStreak = prev.streak ?? streakKeep;
+
+          writeXpStreakCache(finalXp, finalStreak);
+
+          return {
+            ...prev,
+            ...nextStats,
+            xp: finalXp,
+            streak: finalStreak,
+          };
+        });
+
+        writeCache({
+          continueCourses: mappedRecent,
+          stats: { ...nextStats, xp: xpKeep, streak: streakKeep },
+        });
       } catch (e) {
         if (!isMountedRef.current) return;
         setStatsErr(ui.dashLoadFail);
       } finally {
-        if (isMountedRef.current) setLoadingDash(false);
+        if (isMountedRef.current) {
+          setLoadingDash(false);
+          dashboardLoadingRef.current = false; // ✅ reset
+        }
       }
     },
-    [continueCourses.length, ui]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [continueCourses.length, ui, stats.xp, stats.streak]
   );
 
   /* ===== load careers ===== */
   const loadMyCareers = useCallback(
     async ({ force = false } = {}) => {
+      // ✅ request dedupe
+      if (careersLoadingRef.current && !force) {
+        console.log("Careers already loading, skipping duplicate request");
+        return;
+      }
+
       setCareersErr(null);
 
       const cached = !force ? readCareersCache() : null;
       if (cached?.items?.length) setCareers(cached.items);
 
+      careersLoadingRef.current = true;
       setLoadingCareers(true);
+
       try {
         const { data } = await api.get("/my/careers");
         const list = Array.isArray(data) ? data : [];
@@ -834,6 +1034,7 @@ export default function Dashboard() {
         setCareersErr(ui.careerLoadFail);
       } finally {
         setLoadingCareers(false);
+        careersLoadingRef.current = false;
       }
     },
     [ui.careerLoadFail]
@@ -844,35 +1045,47 @@ export default function Dashboard() {
     const cached = readCache();
     if (cached?.continueCourses && cached?.stats) {
       setContinueCourses(cached.continueCourses);
-      setStats(cached.stats);
-      setCacheStamp(cached.updatedAt || "");
+
+      setStats((prev) => {
+        const nextXp = prev.xp ?? cached.stats.xp ?? 0;
+        const nextStreak = prev.streak ?? cached.stats.streak ?? 0;
+
+        writeXpStreakCache(nextXp, nextStreak);
+
+        return {
+          ...cached.stats,
+          xp: nextXp,
+          streak: nextStreak,
+        };
+      });
+
       setLoadingDash(false);
-      loadDashboard({ force: true, silent: true });
+      // ✅ Don't call loadDashboard here - let cache be used
     } else {
       loadDashboard({ force: true, silent: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ===== Refresh on dirty ===== */
+  /* ===== ✅ Debounced refresh on dirty (combined) ===== */
   useEffect(() => {
     if (location.pathname !== "/dashboard") return;
 
-    const dirty = localStorage.getItem("progress_dirty") === "1";
-    if (dirty) {
-      localStorage.removeItem("progress_dirty");
-      loadDashboard({ force: true, silent: true });
-      loadMyCareers({ force: true });
-    }
-  }, [location.pathname, loadDashboard, loadMyCareers]);
+    let timeoutId;
 
-  useEffect(() => {
     const refreshIfDirty = () => {
       const dirty = localStorage.getItem("progress_dirty") === "1";
       if (!dirty) return;
+
+      // Clear immediately to prevent multiple refreshes
       localStorage.removeItem("progress_dirty");
-      loadDashboard({ force: true, silent: true });
-      loadMyCareers({ force: true });
+
+      // Debounce the actual refresh
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        loadDashboard({ force: true, silent: true });
+        loadMyCareers({ force: true });
+      }, 300); // 300ms debounce
     };
 
     const onFocus = () => refreshIfDirty();
@@ -880,13 +1093,18 @@ export default function Dashboard() {
       if (document.visibilityState === "visible") refreshIfDirty();
     };
 
+    // Check once on mount
+    refreshIfDirty();
+
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVis);
+
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [loadDashboard, loadMyCareers]);
+  }, [location.pathname, loadDashboard, loadMyCareers]);
 
   useEffect(() => {
     if (careersLoadedOnceRef.current) return;
@@ -896,39 +1114,63 @@ export default function Dashboard() {
 
   const animatedOverall = useAnimatedNumber(clampPct(stats.progress), 500);
 
-  const updatedText = useMemo(() => {
-    if (!cacheStamp) return "";
-    const ts = new Date(cacheStamp);
-    if (Number.isNaN(ts.getTime())) return "";
-    return ui.updated(ts.toLocaleString());
-  }, [cacheStamp, ui]);
-
+  /* ==========================================================
+      ✅ Resume-aware Continue Learning
+  ========================================================== */
   const handleContinue = useCallback(
     async (c) => {
-      if (!c?.courseKey) return;
+      const courseSlug = String(c?.courseKey || "");
+      if (!courseSlug) return;
+
+      let resumeType = "lesson";
+      let resumeUnitId = 0;
+      let resumeLessonId = 0;
+
+      try {
+        resumeType = localStorage.getItem(`resume_type_v1:${courseSlug}`) || "lesson";
+        resumeUnitId = Number(localStorage.getItem(`resume_unit_v1:${courseSlug}`) || 0);
+        resumeLessonId = Number(localStorage.getItem(`resume_lesson_v1:${courseSlug}`) || 0);
+      } catch {}
+
+      if (!resumeUnitId && c?.lastUnitId) resumeUnitId = Number(c.lastUnitId || 0);
+      if (!resumeLessonId && c?.lastLessonId) resumeLessonId = Number(c.lastLessonId || 0);
+
+      if (resumeType === "qcm" && resumeUnitId) {
+        navigate(`/course/${courseSlug}/unit/${resumeUnitId}/qcm`);
+        return;
+      }
+
+      if (resumeType === "coding" && resumeUnitId) {
+        navigate(`/course/${courseSlug}/unit/${resumeUnitId}/coding`);
+        return;
+      }
+
+      if (resumeUnitId && resumeLessonId) {
+        navigate(`/course/${courseSlug}/unit/${resumeUnitId}/lesson/${resumeLessonId}`);
+        return;
+      }
 
       if (c?.lastUnitId && c?.lastLessonId) {
-        navigate(`/course/${c.courseKey}/unit/${c.lastUnitId}/lesson/${c.lastLessonId}`);
+        navigate(`/course/${courseSlug}/unit/${Number(c.lastUnitId)}/lesson/${Number(c.lastLessonId)}`);
         return;
       }
 
       try {
-        const cr = await api.get(`/courses/${c.courseKey}`);
+        const cr = await api.get(`/courses/${courseSlug}`);
         const course = cr?.data || {};
         const units = Array.isArray(course?.units) ? course.units : [];
-
         const firstUnit = units[0];
         const lessons = Array.isArray(firstUnit?.lessons) ? firstUnit.lessons : [];
         const firstLesson = lessons[0];
 
         if (firstUnit?.id && firstLesson?.id) {
-          navigate(`/course/${c.courseKey}/unit/${firstUnit.id}/lesson/${firstLesson.id}`);
+          navigate(`/course/${courseSlug}/unit/${firstUnit.id}/lesson/${firstLesson.id}`);
           return;
         }
 
-        navigate(`/courses/${c.courseKey}`);
+        navigate(`/courses/${courseSlug}`);
       } catch {
-        navigate(`/courses/${c.courseKey}`);
+        navigate(`/courses/${courseSlug}`);
       }
     },
     [navigate]
@@ -943,6 +1185,8 @@ export default function Dashboard() {
   );
 
   const showSkeleton = loadingDash && continueCourses.length === 0;
+
+  const streakBadge = useMemo(() => getStreakBadge(stats.streak, ui), [stats.streak, ui]);
 
   return (
     <div className="dash-page">
@@ -964,31 +1208,19 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ===================== HERO ===================== */}
         <div className="dash-hero">
+          {/* LEFT: only Student Space + Welcome back + Name */}
           <div className="dash-hero-left">
             <div className="dash-badge">
               <i className="bi bi-stars" /> {ui.studentSpace}
             </div>
 
             <h2 className="dash-title">{ui.welcomeBack(loadingUser ? "…" : name)}</h2>
-            <div className="dash-sub">{ui.continueLast}</div>
-
-            {loadingUser || showSkeleton ? (
-              <div className="mt-3">
-                <SkeletonLine w="48%" h={10} />
-                <div className="mt-2">
-                  <SkeletonLine w="34%" h={10} />
-                </div>
-              </div>
-            ) : (
-              updatedText && (
-                <div className="dash-muted mt-2" style={{ fontSize: 12 }}>
-                  {updatedText}
-                </div>
-              )
-            )}
+            {/* ✅ Removed "Updated at ..." line */}
           </div>
 
+          {/* RIGHT: XP + Streak small cards */}
           <div className="dash-hero-right">
             <div className="dash-mini-card">
               <div className="dash-mini-top">
@@ -998,25 +1230,49 @@ export default function Dashboard() {
               <div className="dash-mini-bottom">{ui.xpSub}</div>
             </div>
 
-            <div className="dash-mini-card">
+            <div className={`dash-mini-card dash-mini-streak tier-${streakBadge.tier}`}>
               <div className="dash-mini-top">
                 <span className="dash-mini-label">{ui.streak}</span>
-                <span className="dash-mini-value">{stats.streak}🔥</span>
+
+                <span className="dash-mini-value" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <i className={`bi ${streakBadge.icon}`} style={{ fontSize: 18 }} />
+                  <span>{stats.streak}</span>
+                </span>
               </div>
-              <div className="dash-mini-bottom">{ui.streakSub}</div>
+
+              <div
+                className="dash-mini-bottom"
+                style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}
+              >
+                <span>{ui.streakSub}</span>
+                <span
+                  className="dash-pill"
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 12,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {streakBadge.label}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         <Row className="g-4">
-          <Col lg={3}>
+          <Col xs={12} lg={3}>
             <Card className="dash-card dash-menu">
               <button
                 className={`dash-menu-item ${active === "learning" ? "active" : ""}`}
                 onClick={() => setActive("learning")}
               >
                 <i className="bi bi-journal-bookmark"></i>
-                <span>{(lang === "km" ? "ការរៀនរបស់ខ្ញុំ" : "My Learning")}</span>
+                <span>{lang === "km" ? "ការរៀនរបស់ខ្ញុំ" : "My Learning"}</span>
               </button>
 
               <button
@@ -1028,47 +1284,46 @@ export default function Dashboard() {
               </button>
 
               <div className="dash-menu-divider" />
-
             </Card>
           </Col>
 
-          <Col lg={9}>
+          <Col xs={12} lg={9}>
             {active === "learning" ? (
               <Card className="dash-card dash-panel">
                 <div className="dash-panel-head">
                   <div>
-                    <h4 className="dash-panel-title">{(lang === "km" ? "ការរៀនរបស់ខ្ញុំ" : "My Learning")}</h4>
+                    <h4 className="dash-panel-title">{lang === "km" ? "ការរៀនរបស់ខ្ញុំ" : "My Learning"}</h4>
                     <div className="dash-muted">{ui.showsOnly}</div>
                   </div>
 
-                  <div className="dash-tab-switch">
-                    <button
-                      className={`dash-tab-btn ${learningTab === "courses" ? "active" : ""}`}
-                      onClick={() => setLearningTab("courses")}
+                  <div className="dash-tab-switch" aria-label="Learning Tabs">
+                    <label
+                      htmlFor="dash-learning-switch"
+                      className="dash-tab-toggle"
+                      aria-label="Toggle Courses / Career"
                     >
-                      {(lang === "km" ? "វគ្គសិក្សា" : "Courses")}
-                    </button>
-                    <button
-                      className={`dash-tab-btn ${learningTab === "career" ? "active" : ""}`}
-                      onClick={() => setLearningTab("career")}
-                    >
-                      {lang === "km" ? "ជំនាញ" : "Career"}
-                    </button>
+                      <input
+                        type="checkbox"
+                        id="dash-learning-switch"
+                        checked={learningTab === "career"}
+                        onChange={(e) => setLearningTab(e.target.checked ? "career" : "courses")}
+                      />
+                      <span>{lang === "km" ? "វគ្គសិក្សា" : "Courses"}</span>
+                      <span>{lang === "km" ? "ជំនាញ" : "Career"}</span>
+                    </label>
                   </div>
                 </div>
 
                 <div className="dash-progress-box">
                   <div className="dash-progress-row">
                     <div className="dash-progress-label">{ui.overallProgress}</div>
-                    <div className="dash-progress-value">
-                      {showSkeleton ? "…" : `${Math.round(animatedOverall)}%`}
-                    </div>
+                    <div className="dash-progress-value">{showSkeleton ? "…" : `${Math.round(animatedOverall)}%`}</div>
                   </div>
                   <ProgressBar className="dash-progress-anim" now={Math.round(animatedOverall)} />
                 </div>
 
                 <Row className="g-3 mt-1">
-                  <Col md={4}>
+                  <Col xs={12} md={4}>
                     <div className="dash-stat">
                       <div className="dash-stat-icon">
                         <i className="bi bi-collection-play" />
@@ -1082,7 +1337,7 @@ export default function Dashboard() {
                     </div>
                   </Col>
 
-                  <Col md={4}>
+                  <Col xs={12} md={4}>
                     <div className="dash-stat">
                       <div className="dash-stat-icon">
                         <i className="bi bi-check2-circle" />
@@ -1096,7 +1351,7 @@ export default function Dashboard() {
                     </div>
                   </Col>
 
-                  <Col md={4}>
+                  <Col xs={12} md={4}>
                     <div className="dash-stat">
                       <div className="dash-stat-icon">
                         <i className="bi bi-award" />
@@ -1143,8 +1398,12 @@ export default function Dashboard() {
                   {learningTab === "courses" ? (
                     showSkeleton ? (
                       <Row className="g-3">
-                        <Col md={6}><SkeletonCourseCard /></Col>
-                        <Col md={6}><SkeletonCourseCard /></Col>
+                        <Col xs={12} md={6}>
+                          <SkeletonCourseCard />
+                        </Col>
+                        <Col xs={12} md={6}>
+                          <SkeletonCourseCard />
+                        </Col>
                       </Row>
                     ) : !continueCourses.length ? (
                       <div className="dash-empty mt-3">
@@ -1160,7 +1419,7 @@ export default function Dashboard() {
                     ) : (
                       <Row className="g-3">
                         {continueCourses.map((c) => (
-                          <Col md={6} key={c.courseKey}>
+                          <Col xs={12} md={6} key={c.courseKey}>
                             <DashCourseCard
                               c={c}
                               downloading={downloading}
@@ -1176,8 +1435,12 @@ export default function Dashboard() {
                     )
                   ) : loadingCareers && !careers.length ? (
                     <Row className="g-3">
-                      <Col md={6}><SkeletonCareerCard /></Col>
-                      <Col md={6}><SkeletonCareerCard /></Col>
+                      <Col xs={12} md={6}>
+                        <SkeletonCareerCard />
+                      </Col>
+                      <Col xs={12} md={6}>
+                        <SkeletonCareerCard />
+                      </Col>
                     </Row>
                   ) : !careers.length ? (
                     <div className="dash-empty mt-3">
@@ -1193,7 +1456,7 @@ export default function Dashboard() {
                   ) : (
                     <Row className="g-3">
                       {careers.map((c) => (
-                        <Col md={6} key={c.slug}>
+                        <Col xs={12} md={6} key={c.slug}>
                           <DashCareerCard
                             c={c}
                             onContinue={handleCareerContinue}

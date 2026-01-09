@@ -1,100 +1,63 @@
+/* =========================
+   Navbar (Desktop + Mobile)
+   Works with Offcanvas version
+========================= */
+
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgb(10 12 15/var(--tw-bg-opacity));
-  padding: 0px 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  transition: all 0.25s ease;
+  background: rgba(10, 12, 15, 0.92) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
   height: 70px;
+  padding: 0 14px;
 }
+
 .navbar-shadow {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.navbar-logo a {
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-  text-decoration: none;
+/* Brand */
+.navbar .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
 }
 
-.navbar-links {
-  display: flex;
-  gap: 20px;
-  list-style: none;
-}
-
-.navbar-links a {
-  color: white;
-  text-decoration: none;
-  font-size: 16px;
-}
-
-.lang-btn {
-  background: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.course-bot{
-    color: orange;
-    font-size: 1rem;
-    padding: 6px 14px;
-}
-.carreer-bot{
-    color: blue;
-    font-size: 1rem;
-    padding: 6px 14px;
-}
-.auth-buttons .nav-link {
-  padding-right: 2px !important;
-  margin-right: 0 !important;
-}
-
-.auth-buttons .nav-link:last-child {
-  padding-left: 2px !important;
-}
-.auth-buttons .btn {
-  font-size: 16px;
-  padding: 6px 14px;
-}
-.navbar .nav-link,
-.navbar .btn {
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-
-.navbar .nav-link:hover,
-.navbar .btn:hover {
-  transform: scale(1.12);
-  opacity: 0.85;
-}
 .nav-logo {
-  height: 70px;          /* perfect for navbar */
-  width: auto;           /* keeps proportions */
+  height: 44px;
+  width: auto;
   object-fit: contain;
+  display: block;
 }
-.nav-logo {
-  padding-top: 0px;   /* adjust between -5px to +5px */
+
+.logo-text {
+  font-weight: 900;
+  letter-spacing: -0.3px;
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 /* Logo animation (smooth pop-in) */
 .logo-animate .nav-logo {
-  animation: logoPop 0.8s ease forwards;
+  animation: logoPop 0.7s ease forwards;
 }
 
 /* Text animation (fade + slide) */
-.logo-text {
+.logo-animate .logo-text {
   opacity: 0;
-  animation: textSlide 1s ease forwards 0.2s;
+  animation: textSlide 0.9s ease forwards 0.15s;
 }
 
 /* Keyframes */
 @keyframes logoPop {
   from {
-    transform: scale(0.4);
+    transform: scale(0.65);
     opacity: 0;
   }
   to {
@@ -105,7 +68,7 @@
 
 @keyframes textSlide {
   from {
-    transform: translateX(-10px);
+    transform: translateX(-8px);
     opacity: 0;
   }
   to {
@@ -113,22 +76,657 @@
     opacity: 1;
   }
 }
-/* Hover animation for logo image */
+
+/* Hover animation */
 .logo-animate:hover .nav-logo {
-  transform: scale(1.15) rotate(3deg);
-  transition: 0.3s ease;
+  transform: scale(1.08) rotate(2deg);
+  transition: 0.25s ease;
+}
+.logo-animate:hover .logo-text {
+  letter-spacing: 0.2px;
+  transition: 0.25s ease;
+  transform: translateX(1px);
 }
 
-/* Hover animation for text next to logo */
-.logo-animate:hover .logo-text {
-  letter-spacing: 1px;
-  color: #0d6efd;
-  transition: 0.3s ease;
-  transform: translateX(3px);
+/* =========================
+   Desktop links
+========================= */
+.navbar .nav-link {
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 10px !important;
+  border-radius: 10px;
+  opacity: 0.92;
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+}
+
+.navbar .nav-link:hover {
+  transform: translateY(-1px);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.course-bot {
+  color: #f59e0b !important; /* orange */
+}
+.carreer-bot {
+  color: #3b82f6 !important; /* blue */
 }
 .tips-bot {
-  font-weight: 600;
-  color: green;
+  color: #22c55e !important; /* green */
+  font-weight: 800;
+}
+.leaderboard-bot{
+  color: rgb(255, 255, 255);
 }
 
+/* Keep your old class name but make it consistent */
+.navlink {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
 
+/* Auth buttons in desktop nav */
+.auth-buttons .btn,
+.navbar .btn {
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 7px 14px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.auth-buttons .btn:hover,
+.navbar .btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+/* Remove weird spacing from bootstrap Nav.Link wrappers */
+.auth-buttons .nav-link {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* =========================
+   Avatar (desktop + mobile)
+========================= */
+.nav-avatar-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-avatar-btn:hover {
+  transform: scale(1.06);
+  opacity: 0.95;
+}
+
+.nav-avatar-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  display: block;
+}
+
+.nav-avatar-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================
+   ✅ Mobile hamburger (custom)
+========================= */
+.nav-hamburger {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  width: 44px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.nav-hamburger span {
+  height: 2px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+}
+
+/* =========================
+   ✅ Offcanvas (mobile menu)
+========================= */
+.nav-offcanvas.offcanvas {
+  background: rgba(10, 12, 15, 0.98);
+  color: #fff;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-offcanvas .offcanvas-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-offcanvas-title {
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+.nav-offcanvas .btn-close {
+  filter: invert(1);
+  opacity: 0.9;
+  margin-right: 20px;
+}
+
+.nav-offcanvas-section {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-offcanvas-section:last-child {
+  border-bottom: none;
+}
+
+.nav-offcanvas-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-offcanvas-user-meta {
+  min-width: 0;
+}
+
+.nav-offcanvas-name {
+  font-weight: 900;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-offcanvas-xp {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Offcanvas nav links look like buttons */
+.nav-offcanvas .nav-link {
+  padding: 10px 12px !important;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-offcanvas .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================
+   Small screen adjustments
+========================= */
+@media (max-width: 576px) {
+  .navbar {
+    height: 64px;
+    padding: 0 10px;
+  }
+
+  .nav-logo {
+    height: 40px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    max-width: 170px;
+  }
+}
+/* Default: behave like a normal container on mobile/tablet */
+.nav-shell.nav-shell-wide {
+  width: 100%;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Only widen on desktop */
+@media (min-width: 992px) {
+  .nav-shell.nav-shell-wide {
+    max-width: 1320px; /* xxl-ish */
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+/* Optional: even wider on very large monitors */
+@media (min-width: 1400px) {
+  .nav-shell.nav-shell-wide {
+    max-width: 1440px;
+  }
+}
+/* ===== Animated Hamburger (no styled-components) ===== */
+.nav-hamburger-checkbox {
+  display: none;
+}
+
+.nav-hamburger-toggle {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+  transition-duration: 0.5s;
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.nav-hamburger-bars {
+  width: 100%;
+  height: 4px;
+  background-color: rgb(176, 92, 255);
+  border-radius: 4px;
+}
+
+.nav-hamburger-bar2 {
+  transition-duration: 0.8s;
+}
+
+.nav-hamburger-bar1,
+.nav-hamburger-bar3 {
+  width: 70%;
+}
+
+.nav-hamburger-checkbox:checked + .nav-hamburger-toggle .nav-hamburger-bars {
+  position: absolute;
+  transition-duration: 0.5s;
+}
+
+.nav-hamburger-checkbox:checked + .nav-hamburger-toggle .nav-hamburger-bar2 {
+  transform: scaleX(0);
+  transition-duration: 0.5s;
+}
+
+.nav-hamburger-checkbox:checked + .nav-hamburger-toggle .nav-hamburger-bar1 {
+  width: 100%;
+  transform: rotate(45deg);
+  transition-duration: 0.5s;
+}
+
+.nav-hamburger-checkbox:checked + .nav-hamburger-toggle .nav-hamburger-bar3 {
+  width: 100%;
+  transform: rotate(-45deg);
+  transition-duration: 0.5s;
+}
+
+.nav-hamburger-checkbox:checked + .nav-hamburger-toggle {
+  transition-duration: 0.5s;
+  transform: rotate(180deg);
+}
+:root {
+  --nav-h: 56px; /* overwritten by JS */
+}
+
+/* Ensure navbar always stays on top */
+.nav-zfix {
+  z-index: 1200 !important;
+}
+
+/* Backdrop starts EXACTLY under navbar */
+.nav-dd-backdrop {
+  position: fixed;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1100;
+
+  /* smoother fade */
+  animation: navDdFadeIn 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes navDdFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Panel starts EXACTLY at bottom of navbar */
+.nav-dd-panel {
+  position: fixed;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  background: #0b0f14;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1150;
+
+  max-height: calc(100vh - var(--nav-h));
+  overflow: auto;
+
+  /* buttery slide */
+  transform: translate3d(0, -14px, 0);
+  opacity: 0;
+  animation: navDdSlideIn 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+  will-change: transform, opacity;
+}
+
+@keyframes navDdSlideIn {
+  from { transform: translate3d(0, -14px, 0); opacity: 0; }
+  to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+.nav-dd-inner {
+  padding: 14px;
+}
+
+.nav-dd-user {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.nav-dd-section {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 12px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .nav-dd-panel,
+  .nav-dd-backdrop {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+/* ===== Modern mobile dropdown styling ===== */
+.nav-dd-modern {
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  position: fixed;
+  z-index: 1150;
+}
+
+.nav-dd-inner-modern {
+  padding: 14px 14px 18px;
+}
+
+/* Glass + neon border */
+.nav-dd-panel.nav-dd-modern {
+  background: rgba(10, 14, 20, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(176, 92, 255, 0.25);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+/* Header */
+.nav-dd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.nav-dd-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-dd-brandDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(176, 92, 255);
+  box-shadow: 0 0 18px rgba(176, 92, 255, 0.7);
+}
+
+.nav-dd-head-title {
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.nav-dd-close {
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.nav-dd-close:hover {
+  background: rgba(176, 92, 255, 0.14);
+  transform: scale(1.04);
+}
+
+/* User card */
+.nav-dd-userCard {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  padding: 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    rgba(176, 92, 255, 0.16),
+    rgba(0, 255, 255, 0.08)
+  );
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+.nav-dd-userCard:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.nav-dd-avatarWrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px rgba(176, 92, 255, 0.35);
+  overflow: hidden;
+}
+.nav-dd-avatar {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+}
+.nav-dd-avatarFallback {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 800;
+}
+
+.nav-dd-userMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.nav-dd-userName {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 800;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-dd-userSub {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+}
+.nav-dd-userChevron {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.4rem;
+  margin-left: 4px;
+}
+
+/* Quick actions chips */
+.nav-dd-quick {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 14px;
+}
+
+.nav-dd-chip {
+  border: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 650;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.nav-dd-chip:hover {
+  background: rgba(176, 92, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+/* Section blocks */
+.nav-dd-section-modern {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-dd-section-title {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 800;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+}
+
+/* Modern link row */
+.nav-dd-link {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px !important;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.nav-dd-link:hover {
+  background: rgba(176, 92, 255, 0.12);
+  transform: translateY(-1px);
+}
+.nav-dd-ico {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(176, 92, 255, 0.16);
+}
+.nav-dd-text {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 750;
+}
+.nav-dd-arrow {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+}
+
+/* Buttons inside menu */
+.nav-dd-btn {
+  border: 0;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
+}
+.nav-dd-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.nav-dd-btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+.nav-dd-btn-primary {
+  background: rgba(176, 92, 255, 0.95);
+  color: #0b0f14;
+  box-shadow: 0 14px 30px rgba(176, 92, 255, 0.25);
+}
+.nav-dd-btn-danger {
+  background: rgba(255, 77, 77, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 77, 77, 0.25) inset;
+}
+
+/* Language wrapper so it sits nicely */
+.nav-dd-langWrap {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+/* Backdrop (slightly more premium) */
+.nav-dd-backdrop {
+  background: radial-gradient(1200px 500px at 50% 0%, rgba(176, 92, 255, 0.22), rgba(0, 0, 0, 0.55));
+}

@@ -406,9 +406,9 @@
   padding: 1px;
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.85),
-    rgba(16, 185, 129, 0.55),
-    rgba(236, 72, 153, 0.55)
+    rgba(163, 164, 246, 0.85),
+    rgba(54, 88, 76, 0.55),
+    rgba(71, 44, 58, 0.55)
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -456,7 +456,7 @@
 .auth-shell .form-control:focus,
 .auth-shell .auth-control:focus,
 .auth-shell .auth-input input:focus {
-  color: rgba(167, 243, 208, 0.98) !important;  /* accent on focus too */
+  color: rgba(138, 138, 138, 0.98) !important;  /* accent on focus too */
   border-color: rgba(99, 102, 241, 0.62) !important;
   background: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.18) !important;

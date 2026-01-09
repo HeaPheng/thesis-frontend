@@ -8,7 +8,7 @@ import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import api from "../lib/api";
 
 import MainLayout from "../layouts/MainLayout";
-
+import LeaderboardPage from "../pages/Leaderboard/LeaderboardPage";
 import Home from "../pages/Home/Home";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
@@ -23,11 +23,14 @@ import MyLearning from "../pages/User/MyLearning";
 import Dashboard from "../pages/User/Dashboard";
 import Profile from "../pages/User/Profile";
 import Settings from "../pages/User/Settings";
-
+import XpHistory from "../pages/User/XpHistory";
 import Tips from "../pages/Tips/Tips";
 import TipDetail from "../pages/Tips/TipDetail";
+import MyItemsPage from "../pages/User/MyItemsPage";
 
 import ProtectedRoute from "./ProtectedRoute";
+
+import Shop from "../pages/shop/Shop";
 
 /** ✅ Legacy redirect: /qcm -> /qcm/:lastLessonId */
 function LegacyQcmRedirectToLastLesson() {
@@ -70,6 +73,24 @@ const AppRoutes = ({ lang, setLang }) => {
   return (
     <Routes>
       <Route element={<MainLayout lang={lang} setLang={setLang} />}>
+      
+
+        <Route
+          path="/shop"
+          element={
+            <ProtectedRoute>
+              <Shop />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-items"
+          element={
+            <ProtectedRoute>
+              <MyItemsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/" element={<Home />} />
 
         <Route path="/login" element={<Login />} />
@@ -133,6 +154,15 @@ const AppRoutes = ({ lang, setLang }) => {
           }
         />
 
+        <Route
+          path="/xp-history"
+          element={
+            <ProtectedRoute>
+              <XpHistory />
+            </ProtectedRoute>
+          }
+        />
+
         {/* 🔒 Protected: learning pages */}
         <Route
           path="/course/:courseId/unit/:unitId/lesson/:lessonId"
@@ -154,7 +184,7 @@ const AppRoutes = ({ lang, setLang }) => {
 
         {/* ✅ REAL QCM route (lesson-based) */}
         <Route
-          path="/course/:courseId/unit/:unitId/qcm/:lessonId"
+          path="/course/:courseId/unit/:unitId/qcm"
           element={
             <ProtectedRoute>
               <QCMPage />
@@ -168,6 +198,9 @@ const AppRoutes = ({ lang, setLang }) => {
           element={<LegacyQcmRedirectToLastLesson />}
         />
       </Route>
+
+      <Route path="/leaderboard" element={<LeaderboardPage />} />
+
     </Routes>
   );
 };

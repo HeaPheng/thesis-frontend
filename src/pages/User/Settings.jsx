@@ -1,12 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Container, Card, Button, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
-import api from "../../lib/api";
 import "./User.css";
+
+// ✅ Use UserContext instead of calling /auth/me here
+import { useUser } from "../../context/UserContext";
 
 export default function Settings({ lang, setLang }) {
   const navigate = useNavigate();
+
+  // ✅ Global user (no /auth/me here)
+  const { user, loading } = useUser();
 
   // ✅ language reactive (fallback if props not provided)
   const [localLang, setLocalLang] = useState(() => localStorage.getItem("app_lang") || "en");
@@ -19,7 +24,7 @@ export default function Settings({ lang, setLang }) {
     return () => window.removeEventListener("app-lang-changed", onLang);
   }, []);
 
-  const activeLang = (lang === "km" || lang === "en") ? lang : localLang;
+  const activeLang = lang === "km" || lang === "en" ? lang : localLang;
 
   const ui = useMemo(() => {
     if (activeLang === "km") {
@@ -27,8 +32,6 @@ export default function Settings({ lang, setLang }) {
         title: "ការកំណត់",
         sub: "ភាសា និងការកំណត់ការរៀនឡើងវិញ",
         home: "ទំព័រដើម",
-
-        checking: "កំពុងពិនិត្យសម័យ…",
 
         language: "ភាសា",
         languageSub: "ជ្រើសរើស English ឬ Khmer។",
@@ -60,8 +63,6 @@ export default function Settings({ lang, setLang }) {
       sub: "Preferences and app options",
       home: "Home",
 
-      checking: "Checking session…",
-
       language: "Language",
       languageSub: "Choose English or Khmer.",
 
@@ -72,7 +73,7 @@ export default function Settings({ lang, setLang }) {
       confirmText: "I understand this will delete my progress for this course.",
       reset: "Reset Progress",
       resetting: "Resetting…",
-      noCoursesHint: "*If you don’t see courses here, enroll in a course first.",
+      noCoursesHint: "*If you don't see courses here, enroll in a course first.",
 
       needSelect: "Please select a course first.",
       needConfirm: "Please confirm before resetting progress.",
@@ -90,7 +91,6 @@ export default function Settings({ lang, setLang }) {
 
   const [loadingLogout, setLoadingLogout] = useState(false);
   const [loadingReset, setLoadingReset] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
 
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
@@ -99,40 +99,27 @@ export default function Settings({ lang, setLang }) {
   const [courseId, setCourseId] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
 
+  // ✅ Auth check via UserContext (no /auth/me call here)
   useEffect(() => {
-    let mounted = true;
+    if (loading) return;
 
-    (async () => {
-      setCheckingSession(true);
-      try {
-        await api.get("/auth/me");
-        if (!mounted) return;
-      } catch (e) {
-        const status = e?.response?.status;
-        if (!mounted) return;
-        if (status === 401) {
-          navigate("/login", { replace: true });
-          return;
-        }
-      } finally {
-        if (mounted) setCheckingSession(false);
-      }
-    })();
+    if (!user) {
+      navigate("/login", { replace: true });
+    }
+  }, [loading, user, navigate]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [navigate]);
-
+  // ✅ Fetch courses on mount (keep API usage for courses)
   useEffect(() => {
     let mounted = true;
 
     (async () => {
       try {
+        // Using your existing api wrapper here is fine for non-/auth/me endpoints.
+        const api = (await import("../../lib/api")).default;
         const { data } = await api.get("/my/courses");
         if (!mounted) return;
         setCourses(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
-      } catch (e) {
+      } catch {
         // ignore
       }
     })();
@@ -142,6 +129,30 @@ export default function Settings({ lang, setLang }) {
     };
   }, []);
 
+  // ✅ Option A helpers: clear local caches + resume keys + mark dirty
+  const setProgressDirty = useCallback((courseSlug) => {
+    try {
+      localStorage.setItem("progress_dirty", "1");
+      if (courseSlug) localStorage.setItem("progress_dirty_course", String(courseSlug));
+      window.dispatchEvent(new Event("dashboard-cache-updated"));
+    } catch {}
+  }, []);
+
+  const clearCourseLocalCaches = useCallback((courseSlug) => {
+    try {
+      // global caches
+      localStorage.removeItem("dashboard_cache_v1");
+      localStorage.removeItem("my_learning_cache_v1");
+
+      if (!courseSlug) return;
+
+      // resume keys (match LessonPage setLocalResume)
+      localStorage.removeItem(`resume_type_v1:${courseSlug}`);
+      localStorage.removeItem(`resume_unit_v1:${courseSlug}`);
+      localStorage.removeItem(`resume_lesson_v1:${courseSlug}`);
+    } catch {}
+  }, []);
+
   const resetProgress = async () => {
     setMsg(null);
     setErr(null);
@@ -149,9 +160,20 @@ export default function Settings({ lang, setLang }) {
     if (!courseId) return setErr(ui.needSelect);
     if (!confirmReset) return setErr(ui.needConfirm);
 
+    const selected = courses.find((c) => String(c.id) === String(courseId));
+    const courseSlug = selected?.slug || null;
+
     setLoadingReset(true);
     try {
+      const api = (await import("../../lib/api")).default;
       await api.post("/progress/reset", { course_id: Number(courseId) });
+
+      // ✅ Option A: clear local caches + resume keys for that course
+      clearCourseLocalCaches(courseSlug);
+
+      // ✅ trigger background sync refresh
+      setProgressDirty(courseSlug);
+
       setMsg(ui.resetOk);
       setConfirmReset(false);
     } catch (e) {
@@ -167,9 +189,14 @@ export default function Settings({ lang, setLang }) {
     setLoadingLogout(true);
 
     try {
+      const api = (await import("../../lib/api")).default;
       await api.post("/auth/logout").catch(() => {});
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+
+      // Let the app know auth changed so UserContext can re-sync
+      window.dispatchEvent(new Event("auth-changed"));
+
       setMsg(ui.logoutOk);
       navigate("/login", { replace: true });
     } catch (e) {
@@ -178,21 +205,6 @@ export default function Settings({ lang, setLang }) {
       setLoadingLogout(false);
     }
   };
-
-  if (checkingSession) {
-    return (
-      <div className="user-page">
-        <Container className="user-container">
-          <Card className="user-card user-panel">
-            <div className="d-flex align-items-center gap-2">
-              <Spinner animation="border" size="sm" />
-              <div>{ui.checking}</div>
-            </div>
-          </Card>
-        </Container>
-      </div>
-    );
-  }
 
   return (
     <div className="user-page">
@@ -233,7 +245,7 @@ export default function Settings({ lang, setLang }) {
               <option value="">{ui.chooseCourse}</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.title}
+                  {c.title || c.slug || `Course #${c.id}`}
                 </option>
               ))}
             </select>

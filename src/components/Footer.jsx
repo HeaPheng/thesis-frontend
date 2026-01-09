@@ -3,6 +3,9 @@ import "./Footer.css";
 import logo from "../assets/images/logo.png";
 import { Link, useLocation } from "react-router-dom";
 
+
+
+
 const Footer = () => {
     const location = useLocation();
     const isLessonPage = location.pathname.includes("/lesson/")||
@@ -11,7 +14,11 @@ const Footer = () => {
     location.pathname.includes("/dashboard")||
     location.pathname.includes("/my-learning")||
     location.pathname.includes("/register")||
-    location.pathname.includes("/login");
+    location.pathname.includes("/login")||
+    location.pathname.includes("/my-items")||
+    location.pathname.includes("/profile")||
+    location.pathname.includes("/xp-history")||
+    location.pathname.includes("/shop");
     // 🔥 HIDE FOOTER COMPLETELY ON LESSON PAGE
     if (isLessonPage) return null;
 

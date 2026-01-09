@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import CourseCard from "../../components/CourseCard";
 import "./Courses.css";
+import { Container } from "react-bootstrap";
 import api from "../../lib/api";
 
 const Courses = () => {
@@ -11,16 +12,23 @@ const Courses = () => {
   const [tag, setTag] = useState("all");
 
   // ✅ language reactive (en / km)
-  const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
+  const [lang, setLang] = useState(
+    () => localStorage.getItem("app_lang") || "en"
+  );
 
   useEffect(() => {
     const onLangChanged = (e) => {
       const next = e?.detail?.lang;
-      if (next === "en" || next === "km") setLang(next);
-      else setLang(localStorage.getItem("app_lang") || "en");
+      if (next === "en" || next === "km") {
+        setLang(next);
+      } else {
+        setLang(localStorage.getItem("app_lang") || "en");
+      }
     };
+
     window.addEventListener("app-lang-changed", onLangChanged);
-    return () => window.removeEventListener("app-lang-changed", onLangChanged);
+    return () =>
+      window.removeEventListener("app-lang-changed", onLangChanged);
   }, []);
 
   const pickText = useCallback(
@@ -28,7 +36,9 @@ const Courses = () => {
     [lang]
   );
 
-  // ✅ load courses
+  // =========================
+  // ✅ Load courses (backend truth)
+  // =========================
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -37,6 +47,9 @@ const Courses = () => {
       .get("/courses")
       .then((res) => {
         if (!alive) return;
+
+        // IMPORTANT:
+        // backend already provides is_saved / is_favourite
         setCourses(Array.isArray(res.data) ? res.data : []);
       })
       .catch((err) => {
@@ -54,8 +67,12 @@ const Courses = () => {
     };
   }, []);
 
+  // =========================
+  // Tags
+  // =========================
   const allTags = useMemo(() => {
     const counts = new Map();
+
     courses.forEach((c) => {
       (Array.isArray(c.tags) ? c.tags : []).forEach((t) =>
         counts.set(t, (counts.get(t) || 0) + 1)
@@ -69,19 +86,28 @@ const Courses = () => {
     return ["all", ...sorted.slice(0, 8)];
   }, [courses]);
 
+  // =========================
+  // Filtering
+  // =========================
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
 
     return courses.filter((c) => {
       const title = pickText(c.title, c.title_km).toLowerCase();
-      const description = pickText(c.description, c.description_km).toLowerCase();
+      const description = pickText(
+        c.description,
+        c.description_km
+      ).toLowerCase();
+
       const tagsArr = Array.isArray(c.tags) ? c.tags : [];
 
       const matchesQuery =
         !query ||
         title.includes(query) ||
         description.includes(query) ||
-        tagsArr.some((x) => (x || "").toLowerCase().includes(query));
+        tagsArr.some((x) =>
+          (x || "").toLowerCase().includes(query)
+        );
 
       const matchesTag = tag === "all" ? true : tagsArr.includes(tag);
 
@@ -89,8 +115,33 @@ const Courses = () => {
     });
   }, [courses, q, tag, pickText]);
 
-  if (loading) return <div style={{ padding: 24 }}>{lang === "km" ? "កំពុងផ្ទុក..." : "Loading..."}</div>;
+  // =========================
+  // Loading UI
+  // =========================
+  if (loading) {
+    return (
+      <div className="tips-page">
+        <Container className="tips-container">
+          <div className="tips-loader">
+            <div className="loader-wrapper">
+              <div className="loader"></div>
+              <div className="letter-wrapper">
+                {"Loading..".split("").map((char, i) => (
+                  <span key={i} className="loader-letter">
+                    {char}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
+  // =========================
+  // Render
+  // =========================
   return (
     <div className="courses-page">
       <div className="courses-container">
@@ -150,14 +201,19 @@ const Courses = () => {
               units={course.units_count}
               qcm={course.qcm_count}
               coding={course.coding_count || 0}
-            />
 
+              // ✅ CRITICAL: pass backend truth
+              isSaved={course.is_saved}
+              isFavourite={course.is_favourite}
+            />
           ))}
         </div>
 
         {filtered.length === 0 && (
           <div className="courses-empty">
-            {lang === "km" ? "រកមិនឃើញវគ្គសិក្សា។ សាកល្បងពាក្យផ្សេង។" : "No courses found. Try a different keyword."}
+            {lang === "km"
+              ? "រកមិនឃើញវគ្គសិក្សា។ សាកល្បងពាក្យផ្សេង។"
+              : "No courses found. Try a different keyword."}
           </div>
         )}
       </div>

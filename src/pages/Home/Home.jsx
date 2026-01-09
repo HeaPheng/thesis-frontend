@@ -11,7 +11,19 @@ import api from "../../lib/api";
 const Home = () => {
   const navigate = useNavigate();
 
-  // ✅ our language state (en / km)
+  /* ==========================================================
+     ✅ OPTION A: Auto-redirect logged-in users away from Home
+     - If token exists, go to /dashboard
+     - Works local + deployed
+  ========================================================== */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
+  // ✅ language state (en / km)
   const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
 
   useEffect(() => {
@@ -29,14 +41,13 @@ const Home = () => {
     [lang]
   );
 
-  // ✅ Home Register state
-  const [rName, setRName] = useState("");
-  const [rEmail, setREmail] = useState("");
-  const [rPassword, setRPassword] = useState("");
-  const [rPasswordConfirm, setRPasswordConfirm] = useState("");
+  // ✅ Home Login state
+  const [lEmail, setLEmail] = useState("");
+  const [lPassword, setLPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [rError, setRError] = useState("");
-  const [rLoading, setRLoading] = useState(false);
+  const [lError, setLError] = useState("");
+  const [lLoading, setLLoading] = useState(false);
 
   // ✅ Real data state
   const [courses, setCourses] = useState([]);
@@ -74,7 +85,6 @@ const Home = () => {
         }
       } catch (e) {
         if (!alive) return;
-        // ✅ keep a stable error key instead of language-specific text
         setDataError("home_load_failed");
       } finally {
         if (!alive) return;
@@ -85,77 +95,69 @@ const Home = () => {
     return () => {
       alive = false;
     };
-  }, []); // ✅ IMPORTANT: no lang dependency
+  }, []);
 
-
-  const handleHomeRegister = async (e) => {
+  const handleHomeLogin = async (e) => {
     e.preventDefault();
-    setRError("");
+    setLError("");
 
-    if (!rName || !rEmail || !rPassword || !rPasswordConfirm) {
-      setRError(lang === "km" ? "សូមបំពេញព័ត៌មានឱ្យគ្រប់។" : "Please fill in all fields.");
-      return;
-    }
-    if (rPassword !== rPasswordConfirm) {
-      setRError(lang === "km" ? "ពាក្យសម្ងាត់បញ្ជាក់មិនត្រឹមត្រូវ។" : "Password confirmation does not match.");
+    if (!lEmail || !lPassword) {
+      setLError(lang === "km" ? "សូមបំពេញអ៊ីមែល និងពាក្យសម្ងាត់។" : "Please enter email and password.");
       return;
     }
 
     try {
-      setRLoading(true);
+      setLLoading(true);
 
-      const { data } = await api.post("/auth/register", {
-        name: rName,
-        email: rEmail,
-        password: rPassword,
-        password_confirmation: rPasswordConfirm,
+      const { data } = await api.post("/auth/login", {
+        email: lEmail,
+        password: lPassword,
       });
 
-      // ✅ store auth
+      // ✅ store auth (same style as your old register)
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ keep your old flags (if other pages rely on them)
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userName", data.user?.name || rName);
-      localStorage.setItem("userEmail", data.user?.email || rEmail);
+      localStorage.setItem("userName", data.user?.name || "");
+      localStorage.setItem("userEmail", data.user?.email || lEmail);
 
       window.dispatchEvent(new Event("auth-changed"));
 
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.errors?.email?.[0] ||
         err?.response?.data?.errors?.password?.[0] ||
-        err?.response?.data?.errors?.name?.[0] ||
-        (lang === "km" ? "ចុះឈ្មោះមិនបានទេ" : "Register failed");
-      setRError(msg);
+        (lang === "km" ? "ចូលគណនីមិនបានទេ" : "Login failed");
+      setLError(msg);
     } finally {
-      setRLoading(false);
+      setLLoading(false);
     }
   };
 
-  // ✅ home text dictionary (simple + fast)
+  // ✅ home text dictionary
   const text = useMemo(() => {
     const km = {
       hero_title: "រៀនជំនាញថ្មីៗ ដើម្បីអនាគតល្អ",
       hero_subtitle: "ជ្រើសរើសវគ្គសិក្សា និងជំនាញ ដើម្បីចាប់ផ្តើមថ្ងៃនេះ។",
       browse_courses: "មើលវគ្គសិក្សា",
       career_paths: "ជំនាញ",
-      create_account: "បង្កើតគណនី",
-      full_name: "ឈ្មោះពេញ",
+      welcome_back: "សូមស្វាគមន៍មកវិញ",
+      login_to_continue: "ចូលគណនី ដើម្បីបន្ត",
       email: "អ៊ីមែល",
       password: "ពាក្យសម្ងាត់",
-      confirm_password: "បញ្ជាក់ពាក្យសម្ងាត់",
-      register: "ចុះឈ្មោះ",
-      already_account: "មានគណនីរួចហើយ?",
       login: "ចូលគណនី",
+      no_account: "មិនទាន់មានគណនី?",
+      register: "ចុះឈ្មោះ",
       explore_courses: "ស្វែងរកវគ្គសិក្សា",
       view_all_courses: "មើលវគ្គសិក្សាទាំងអស់",
       view_all_careers: "មើលជំនាញទាំងអស់",
       loading_courses: "កំពុងផ្ទុកវគ្គសិក្សា...",
       loading_careers: "កំពុងផ្ទុកជំនាញ...",
+      show: "បង្ហាញ",
+      hide: "លាក់",
     };
 
     const en = {
@@ -163,19 +165,20 @@ const Home = () => {
       hero_subtitle: "Choose courses and career paths to start learning today.",
       browse_courses: "Browse Courses",
       career_paths: "Career Paths",
-      create_account: "Create Account",
-      full_name: "Full Name",
+      welcome_back: "Welcome back",
+      login_to_continue: "Login to continue",
       email: "Email",
       password: "Password",
-      confirm_password: "Confirm Password",
-      register: "Register",
-      already_account: "Already have an account?",
       login: "Login",
+      no_account: "Don’t have an account?",
+      register: "Register",
       explore_courses: "Explore Courses",
       view_all_courses: "View All Courses",
       view_all_careers: "View All Careers",
       loading_courses: "Loading courses...",
       loading_careers: "Loading career paths...",
+      show: "Show",
+      hide: "Hide",
     };
 
     return lang === "km" ? km : en;
@@ -215,71 +218,72 @@ const Home = () => {
         </Container>
       </div>
 
-      {/* REGISTER */}
+      {/* LOGIN */}
       <RevealOnScroll>
-        <div className="home-register-wrapper">
-          <div className="home-register-card">
-            <h3 className="home-register-title">{text.create_account}</h3>
+        <div className="home-login-wrapper">
+          <div className="home-login-card">
+            <div className="home-login-badge">
+              <i className="bi bi-stars"></i>
+              <span>{text.login_to_continue}</span>
+            </div>
 
-            {rError && (
+            <h3 className="home-login-title">{text.welcome_back} 👋</h3>
+
+            {lError && (
               <Alert variant="danger" className="mb-3">
-                {rError}
+                {lError}
               </Alert>
             )}
 
-            <form onSubmit={handleHomeRegister}>
-              <div className="home-auth-input">
-                <i className="bi bi-person"></i>
-                <input
-                  type="text"
-                  placeholder={text.full_name}
-                  value={rName}
-                  onChange={(e) => setRName(e.target.value)}
-                  disabled={rLoading}
-                />
-              </div>
-
-              <div className="home-auth-input">
+            <form onSubmit={handleHomeLogin}>
+              <div className="home-auth-input modern">
                 <i className="bi bi-envelope"></i>
                 <input
                   type="email"
                   placeholder={text.email}
-                  value={rEmail}
-                  onChange={(e) => setREmail(e.target.value)}
-                  disabled={rLoading}
+                  value={lEmail}
+                  onChange={(e) => setLEmail(e.target.value)}
+                  disabled={lLoading}
                 />
               </div>
 
-              <div className="home-auth-input">
+              <div className="home-auth-input modern">
                 <i className="bi bi-lock"></i>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder={text.password}
-                  value={rPassword}
-                  onChange={(e) => setRPassword(e.target.value)}
-                  disabled={rLoading}
+                  value={lPassword}
+                  onChange={(e) => setLPassword(e.target.value)}
+                  disabled={lLoading}
                 />
+                <button
+                  type="button"
+                  className="home-eye-btn"
+                  onClick={() => setShowPassword((v) => !v)}
+                  disabled={lLoading}
+                  aria-label={showPassword ? text.hide : text.show}
+                >
+                  <i className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                </button>
               </div>
 
-              <div className="home-auth-input">
-                <i className="bi bi-lock-fill"></i>
-                <input
-                  type="password"
-                  placeholder={text.confirm_password}
-                  value={rPasswordConfirm}
-                  onChange={(e) => setRPasswordConfirm(e.target.value)}
-                  disabled={rLoading}
-                />
-              </div>
-
-              <button className="home-register-btn btn btn-success" type="submit" disabled={rLoading}>
-                {rLoading ? (lang === "km" ? "កំពុងបង្កើត..." : "Creating...") : text.register}
+              <button className="home-login-btn" type="submit" disabled={lLoading}>
+                {lLoading ? (
+                  <>
+                    <Spinner size="sm" /> {lang === "km" ? "កំពុងចូល..." : "Signing in..."}
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-box-arrow-in-right me-2"></i>
+                    {text.login}
+                  </>
+                )}
               </button>
             </form>
 
-            <p className="home-register-footer">
-              {text.already_account}
-              <a href="/login"> {text.login}</a>
+            <p className="home-login-footer">
+              {text.no_account}
+              <Link to="/register"> {text.register}</Link>
             </p>
           </div>
         </div>
@@ -340,7 +344,7 @@ const Home = () => {
                 <Spinner size="sm" /> {text.loading_careers}
               </div>
             ) : (
-              <Row className="gy-4 justify-content-center">
+              <Row className="gy-4 justify-content-start">
                 {careers.slice(0, 6).map((career) => (
                   <Col key={career.id} md={6} lg={4} className="d-flex justify-content-center">
                     <CareerCard

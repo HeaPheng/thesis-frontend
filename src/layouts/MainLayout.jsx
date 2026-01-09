@@ -10,31 +10,44 @@ import ProgressSync from "../components/ProgressSync";
 export default function MainLayout({ lang, setLang }) {
   const location = useLocation();
 
+  // ✅ Use token as the single source of truth
   const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("isLoggedIn") === "true"
+    !!localStorage.getItem("token")
   );
 
   useEffect(() => {
-    const syncAuth = () =>
-      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+    const syncAuth = () => setIsLoggedIn(!!localStorage.getItem("token"));
 
     syncAuth();
     window.addEventListener("storage", syncAuth);
     window.addEventListener("auth-changed", syncAuth);
+
     return () => {
       window.removeEventListener("storage", syncAuth);
       window.removeEventListener("auth-changed", syncAuth);
     };
   }, []);
 
+  // ✅ Detect tips detail page (/tips/:slug)
+  const isTipsDetail =
+    location.pathname.startsWith("/tips/") &&
+    location.pathname !== "/tips";
+
   const useMiniFooter = useMemo(() => {
     if (!isLoggedIn) return false;
     const p = location.pathname;
+
     return (
+      p.startsWith("/course/") ||
       p.startsWith("/courses") ||
       p.startsWith("/careers") ||
       p.startsWith("/dashboard") ||
       p.startsWith("/profile") ||
+      p.startsWith("/shop") ||
+      p.startsWith("/my-items") ||
+      p.startsWith("/leaderboard") ||
+      p.startsWith("/xp-history") ||
+      p.startsWith("/tips") ||
       p.startsWith("/settings")
     );
   }, [isLoggedIn, location.pathname]);
@@ -50,14 +63,13 @@ export default function MainLayout({ lang, setLang }) {
     const p = location.pathname;
     if (p.startsWith("/courses")) return "Loading courses...";
     if (p.startsWith("/careers")) return "Loading careers...";
-    if (p.startsWith("/tutorials")) return "Loading tips...";
+    if (p.startsWith("/tips")) return "Loading tips...";
     if (p.startsWith("/dashboard")) return "Loading dashboard...";
     return "Loading...";
   }, [location.pathname]);
 
   return (
     <div className={`${lang === "en" ? "font-en" : "font-kh"} app-shell`}>
-      {/* ✅ MUST be inside return */}
       {isLoggedIn && <ProgressSync />}
 
       <Navbar lang={lang} setLang={setLang} />
@@ -66,7 +78,12 @@ export default function MainLayout({ lang, setLang }) {
         <Outlet />
       </main>
 
-      {useMiniFooter ? <FooterMini /> : <Footer />}
+      {/* ✅ Footer logic */}
+      {isLoggedIn ? (
+        useMiniFooter ? <FooterMini /> : null
+      ) : !isTipsDetail ? (
+        <Footer />
+      ) : null}
 
       <RouteLoader show={routePulse} label={loaderLabel} />
     </div>

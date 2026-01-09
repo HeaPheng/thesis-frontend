@@ -2,7 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Container, Row, Col, Card, Button, ProgressBar, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import api from "../../lib/api";
-import "./Dashboard.css"; // ✅ reuse dashboard styles
+import "./MyLearning.css";
+
+import html2canvas from "html2canvas";
+import CertificateSheet from "../../components/CertificateSheet";
 
 /* ===================== CACHE ===================== */
 const MY_LEARNING_CACHE_KEY = "my_learning_cache_v1";
@@ -26,12 +29,17 @@ function writeMyLearningCache(items) {
   try {
     localStorage.setItem(
       MY_LEARNING_CACHE_KEY,
-      JSON.stringify({ items: items || [], updatedAt: new Date().toISOString() })
+      JSON.stringify({
+        items: Array.isArray(items) ? items : [],
+        updatedAt: new Date().toISOString(),
+      })
     );
-  } catch {}
+  } catch { }
 }
 
 /* ===================== HELPERS ===================== */
+const toBool = (v) => v === true || v === 1 || v === "1" || v === "true";
+
 const clampPct = (n) => {
   const v = Number(n || 0);
   if (Number.isNaN(v)) return 0;
@@ -76,6 +84,16 @@ function badgeIconFromPct(pct) {
   return "bi-play-circle-fill";
 }
 
+/* ===================== COURSE DETAIL CONTINUE HELPERS ===================== */
+const getUnitCodingEn = (unitObj) =>
+  unitObj?.codingExerciseEn ??
+  unitObj?.coding_exercise_en ??
+  unitObj?.codingExercise ??
+  unitObj?.coding_exercise ??
+  null;
+
+const hasUnitCoding = (unitObj) => !!getUnitCodingEn(unitObj);
+
 /* ===================== ANIMATION HOOK ===================== */
 function useAnimatedNumber(targetValue, duration = 450) {
   const [val, setVal] = useState(() => Number(targetValue || 0));
@@ -109,86 +127,149 @@ function useAnimatedNumber(targetValue, duration = 450) {
   return val;
 }
 
-/* ===================== CONCURRENCY ===================== */
-async function runWithLimit(items, limit, worker) {
-  const results = [];
-  let idx = 0;
-
-  const runners = new Array(Math.min(limit, items.length))
-    .fill(0)
-    .map(async () => {
-      while (idx < items.length) {
-        const cur = idx++;
-        try {
-          results[cur] = await worker(items[cur], cur);
-        } catch {
-          results[cur] = null;
-        }
-      }
-    });
-
-  await Promise.all(runners);
-  return results;
-}
-
-/* ===================== CARD ===================== */
-function CourseCardDash({ c, onContinue, onDetails, ui }) {
+/* ===================== CARD: FULL (In Progress / Completed) ===================== */
+function CourseCardFull({ c, downloading, isContinuing, onContinue, onDetails, onDownloadCert, ui, pickText }) {
   const pct = clampPct(c.progressPct);
-  const badgeLabel = badgeLabelFromPct(pct, ui);
-  const badgeIcon = badgeIconFromPct(pct);
   const animatedCardPct = useAnimatedNumber(pct, 450);
 
+  const badgeLabel = badgeLabelFromPct(pct, ui);
+  const badgeIcon = badgeIconFromPct(pct);
+
+  const displayTitle = pickText(c.title, c.title_km) || ui.untitled;
+
   return (
-    <Card className="dash-course-card">
-      <div className="dash-course-cover">
+    <Card className="ml-card">
+      <div className="ml-card-cover">
         {c.thumbnail ? (
-          <img src={c.thumbnail} alt={c.title} className="dash-course-img" />
+          <img src={c.thumbnail} alt={displayTitle} className="ml-card-img" />
         ) : (
-          <div className="dash-course-img dash-course-img-fallback">
+          <div className="ml-card-img ml-card-img-fallback">
             <i className="bi bi-journal-code" />
           </div>
         )}
 
-        <div className="dash-course-overlay" />
+        <div className="ml-card-cover-overlay" />
 
-        <div className="dash-course-badge">
+        <div className="ml-card-badge">
           <i className={`bi ${badgeIcon}`} />
           <span>{badgeLabel}</span>
         </div>
 
-        <div className="dash-course-pct">{Math.round(animatedCardPct)}%</div>
+        <div className="ml-card-pct">{Math.round(animatedCardPct)}%</div>
       </div>
 
-      <div className="dash-course-body">
-        <div className="dash-course-title" title={c.title}>
-          {c.title}
+      <div className="ml-card-body">
+        <div className="ml-card-title" title={displayTitle}>
+          {displayTitle}
         </div>
 
-        <div className="dash-course-meta">
-          <span className="dash-pill">
+        <div className="ml-card-meta">
+          <span className="ml-pill">
             <i className="bi bi-journals" /> {c.completedLessons}/{c.totalLessons} {ui.lessons}
           </span>
-          <span className="dash-pill">
+          <span className="ml-pill">
             <i className="bi bi-layers" /> {c.completedUnits}/{c.totalUnits} {ui.units}
+          </span>
+
+          {c.isCompletedCourse && (
+            <span className="ml-pill ml-pill-success">
+              <i className="bi bi-award-fill" /> {ui.certificate}
+            </span>
+          )}
+        </div>
+
+        <div className="ml-progress">
+          <div className="ml-progress-row">
+            <span className="ml-muted">{ui.progress}</span>
+            <span className="ml-progress-val">{Math.round(animatedCardPct)}%</span>
+          </div>
+          <ProgressBar now={Math.round(animatedCardPct)} />
+        </div>
+
+        <div className="ml-actions">
+          <Button variant="primary" className="ml-btn-primary" disabled={!!isContinuing} onClick={onContinue}>
+            <i className="bi bi-play-fill" /> {isContinuing ? ui.continueLoading : ui.continue}
+          </Button>
+
+          <Button variant="outline-light" className="ml-btn-secondary" onClick={onDetails}>
+            {ui.details}
+          </Button>
+        </div>
+
+        {c.isCompletedCourse && (
+          <div className="mt-2 d-grid">
+            <Button
+              variant="outline-success"
+              className="ml-btn-cert"
+              disabled={!!downloading[c.courseKey]}
+              onClick={onDownloadCert}
+            >
+              {downloading[c.courseKey] ? (
+                ui.downloading
+              ) : (
+                <>
+                  <i className="bi bi-download" /> {ui.downloadCertificate}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+/* ===================== CARD: SIMPLE (Saved for Later, no Continue) ===================== */
+/* ===================== CARD: SAVED (same look as FULL, but no Continue) ===================== */
+function CourseCardSaved({ c, onDetails, ui, pickText }) {
+  const displayTitle = pickText(c.title, c.title_km) || ui.untitled;
+
+  return (
+    <Card className="ml-card">
+      {/* Cover */}
+      <div className="ml-card-cover">
+        {c.thumbnail ? (
+          <img src={c.thumbnail} alt={displayTitle} className="ml-card-img" />
+        ) : (
+          <div className="ml-card-img ml-card-img-fallback">
+            <i className="bi bi-journal-code" />
+          </div>
+        )}
+
+        <div className="ml-card-cover-overlay" />
+
+        {/* Badge */}
+        <div className="ml-card-badge">
+          <i className="bi bi-bookmark-fill" />
+          <span>{ui.savedForLater}</span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="ml-card-body">
+        <div className="ml-card-title" title={displayTitle}>
+          {displayTitle}
+        </div>
+
+        <div className="ml-card-meta">
+          <span className="ml-pill">
+            <i className="bi bi-journals" /> {c.totalLessons} {ui.lessons}
+          </span>
+          <span className="ml-pill">
+            <i className="bi bi-layers" /> {c.totalUnits} {ui.units}
+          </span>
+          <span className="ml-pill ml-pill-muted">
+            <i className="bi bi-bookmark" /> {ui.savedForLater}
           </span>
         </div>
 
-        <div className="dash-course-progress">
-          <div className="dash-course-progress-row">
-            <span className="dash-muted" style={{ fontSize: 12 }}>
-              {ui.progress}
-            </span>
-            <span className="dash-course-progress-value">{Math.round(animatedCardPct)}%</span>
-          </div>
-          <ProgressBar className="dash-progress-anim" now={Math.round(animatedCardPct)} />
-        </div>
-
-        <div className="dash-course-actions">
-          <Button variant="primary" className="dash-course-cta" onClick={() => onContinue(c)}>
-            <i className="bi bi-play-fill" /> {ui.continue}
+        {/* Actions (Start Learning + Details) */}
+        <div className="ml-actions">
+          <Button variant="primary" className="ml-btn-primary" onClick={onDetails}>
+            <i className="bi bi-play-fill" /> {ui.startLearning}
           </Button>
 
-          <Button variant="outline-light" className="dash-course-secondary" onClick={() => onDetails(c)}>
+          <Button variant="outline-light" className="ml-btn-secondary" onClick={onDetails}>
             {ui.details}
           </Button>
         </div>
@@ -197,6 +278,7 @@ function CourseCardDash({ c, onContinue, onDetails, ui }) {
   );
 }
 
+
 /* ===================== PAGE ===================== */
 export default function MyLearning() {
   const navigate = useNavigate();
@@ -204,7 +286,6 @@ export default function MyLearning() {
 
   // ✅ language reactive
   const [lang, setLang] = useState(() => localStorage.getItem("app_lang") || "en");
-
   useEffect(() => {
     const onLang = (e) => {
       const next = e?.detail?.lang || localStorage.getItem("app_lang") || "en";
@@ -214,6 +295,8 @@ export default function MyLearning() {
     return () => window.removeEventListener("app-lang-changed", onLang);
   }, []);
 
+  const pickText = useCallback((en, km) => (lang === "km" ? km || en || "" : en || km || ""), [lang]);
+
   const ui = useMemo(() => {
     if (lang === "km") {
       return {
@@ -221,122 +304,257 @@ export default function MyLearning() {
         subtitle: "តម្រៀបតាមវឌ្ឍនភាពខ្ពស់ជាងគេ •",
         back: "ត្រឡប់ក្រោយ",
         browseCourses: "រកមើលវគ្គសិក្សា",
-        refresh: "ធ្វើបច្ចុប្បន្នភាព",
         loading: "កំពុងផ្ទុក...",
-        empty: "មិនទាន់មានវគ្គដែលបានចាប់ផ្តើមទេ។",
+        empty: "មិនមានវគ្គសិក្សានៅទីនេះទេ។",
         started: "បានចាប់ផ្តើម",
         failed: "មិនអាចផ្ទុកវឌ្ឍនភាពការរៀនបានទេ។",
 
-        // card labels
+        tabInProgress: "កំពុងរៀន",
+        tabCompleted: "បានបញ្ចប់",
+        tabSaved: "រក្សាទុកក្រោយ",
+        savedForLater: "រក្សាទុកក្រោយ",
+
         lessons: "មេរៀន",
         units: "ជំពូក",
         progress: "វឌ្ឍនភាព",
         continue: "បន្ត​រៀន",
         details: "លម្អិត",
 
-        // badges
         badgeCompleted: "បានបញ្ចប់",
         badgeAlmost: "ជិតបញ្ចប់",
         badgeInProgress: "កំពុងរៀន",
         badgeGettingStarted: "ទើបចាប់ផ្តើម",
+
+        certificate: "វិញ្ញាបនបត្រ",
+        downloading: "កំពុងទាញយក…",
+        downloadCertificate: "ទាញយកវិញ្ញាបនបត្រ",
+        untitled: "មិនមានចំណងជើង",
+
+        certNotReady: "វិញ្ញាបនបត្រមិនទាន់រួចទេ។",
+        certPreviewNotReady: "មើលមុនវិញ្ញាបនបត្រមិនទាន់រួច។",
+        certDownloadFail: "មិនអាចទាញយកវិញ្ញាបនបត្រ។ ពិនិត្យ API /certificates/course/:slug",
+
+        continueFail: "មិនអាចបន្តបានទេ។ សូមចូលទៅកាន់ទំព័រលម្អិតវគ្គសិក្សា។",
+        continueLoading: "កំពុងរៀបចំ…",
+        startLearning: "ចាប់ផ្តើមរៀន",
+
       };
     }
     return {
+      startLearning: "Start Learning",
       pageTitle: "My Learning",
       subtitle: "Sorted by most progress •",
       back: "Back",
       browseCourses: "Browse Courses",
-      refresh: "Refresh",
       loading: "Loading...",
-      empty: "No started courses yet.",
+      empty: "No courses here yet.",
       started: "started",
       failed: "Failed to load your learning progress.",
 
-      // card labels
+      tabInProgress: "In Progress",
+      tabCompleted: "Completed",
+      tabSaved: "Saved for Later",
+      savedForLater: "Saved for Later",
+
       lessons: "lessons",
       units: "units",
       progress: "Progress",
       continue: "Continue",
       details: "Details",
 
-      // badges
       badgeCompleted: "Completed",
       badgeAlmost: "Almost",
       badgeInProgress: "In Progress",
       badgeGettingStarted: "Getting Started",
+
+      certificate: "Certificate",
+      downloading: "Downloading…",
+      downloadCertificate: "Download Certificate",
+      untitled: "Untitled",
+
+      certNotReady: "Certificate not ready yet.",
+      certPreviewNotReady: "Certificate preview not ready.",
+      certDownloadFail: "Could not download certificate. Check /certificates/course/:slug API.",
+
+      continueFail: "Could not continue. Please open the course details page.",
+      continueLoading: "Preparing…",
     };
   }, [lang]);
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
+
+  // merged list (progress + saved-only)
   const [items, setItems] = useState([]);
 
-  const loadAll = useCallback(async ({ silent = false } = {}) => {
-    if (!silent) setLoading(true);
-    setErr(null);
+  // cert download state
+  const [downloading, setDownloading] = useState({});
+  const [statsErr, setStatsErr] = useState(null);
 
+  const [certPreview, setCertPreview] = useState(null);
+  const certRef = useRef(null);
+
+  // Continue loading per course
+  const [continuing, setContinuing] = useState({});
+
+  // user name for certificate
+  const [userName, setUserName] = useState(() => {
     try {
-      const res = await api.get("/my/courses");
-      const allCourses = Array.isArray(res.data) ? res.data : res.data?.data || [];
+      return JSON.parse(localStorage.getItem("user") || "null")?.name || "Student";
+    } catch {
+      return "Student";
+    }
+  });
 
-      const results = await runWithLimit(allCourses, 6, async (c) => {
-        const key = String(c?.slug || c?.id);
+  // ✅ modern tabs (no react-bootstrap Nav)
+  const [activeTab, setActiveTab] = useState("inprogress");
 
-        const pr = await api.get(`/progress/course/${key}`);
-        const data = pr?.data || {};
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const u = JSON.parse(localStorage.getItem("user") || "null");
+        setUserName(u?.name || "Student");
+      } catch {
+        setUserName("Student");
+      }
+    };
+    sync();
+    window.addEventListener("auth-changed", sync);
+    return () => window.removeEventListener("auth-changed", sync);
+  }, []);
 
-        const completedLessonIds = Array.isArray(data?.completed_lesson_ids)
-          ? data.completed_lesson_ids.map((x) => Number(x))
-          : [];
+  /* =====================
+     data loading + cache
+     ✅ uses /my/courses (enrolled/progress) + /courses (is_saved truth)
+  ===================== */
+  const loadAll = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setLoading(true);
+      setErr(null);
 
-        const unitProg = data?.unit_progress || {};
-        const completedUnitsRaw = Object.values(unitProg).filter((up) => up?.completed).length;
+      try {
+        const [myRes, coursesRes] = await Promise.allSettled([api.get("/my/courses"), api.get("/courses")]);
 
-        const totalUnits = Number(c?.units_count || 0);
-        const totalLessons = Number(c?.lessons_count || 0);
+        const myCourses =
+          myRes.status === "fulfilled"
+            ? Array.isArray(myRes.value.data)
+              ? myRes.value.data
+              : Array.isArray(myRes.value.data?.data)
+                ? myRes.value.data.data
+                : []
+            : [];
 
-        const completedLessons = clampCount(completedLessonIds.length, totalLessons);
-        const completedUnits = clampCount(completedUnitsRaw, totalUnits);
+        const allCourses =
+          coursesRes.status === "fulfilled"
+            ? Array.isArray(coursesRes.value.data)
+              ? coursesRes.value.data
+              : Array.isArray(coursesRes.value.data?.data)
+                ? coursesRes.value.data.data
+                : []
+            : [];
 
-        const progressPct = calcCoursePctCombined({
-          completedUnits,
-          totalUnits,
-          completedLessons,
-          totalLessons,
+        // saved truth from /courses
+        const savedMap = new Map();
+        allCourses.forEach((c) => {
+          const key = String(c?.slug || c?.id || "");
+          if (!key) return;
+          savedMap.set(key, {
+            is_saved: toBool(c?.is_saved),
+            title: c?.title || ui.untitled,
+            title_km: c?.title_km || null,
+            thumbnail: c?.thumbnail_url || "",
+            totalUnits: Number(c?.units_count || 0),
+            totalLessons: Number(c?.lessons_count || 0),
+          });
         });
 
-        return {
-          courseKey: key,
-          title: c?.title || "Untitled",
-          thumbnail: c?.thumbnail_url || "",
-          completedLessons,
-          totalLessons,
-          completedUnits,
-          totalUnits,
-          progressPct,
-          lastUnitId: data?.last_unit_id ? Number(data.last_unit_id) : null,
-          lastLessonId: data?.last_lesson_id ? Number(data.last_lesson_id) : null,
-        };
-      });
+        // 1) enrolled/progress courses
+        const progressItems = myCourses
+          .map((c) => {
+            const key = String(c?.slug || c?.id);
+            if (!key) return null;
 
-      const startedCourses = results
-        .filter(Boolean)
-        .sort((a, b) => (b.progressPct || 0) - (a.progressPct || 0));
+            const totalUnits = Number(c?.units_count || 0);
+            const totalLessons = Number(c?.lessons_count || 0);
 
-      if (!isMountedRef.current) return;
+            const completedUnits = clampCount(Number(c?.completed_units_count || 0), totalUnits);
+            const completedLessons = clampCount(Number(c?.completed_lessons_count || 0), totalLessons);
 
-      setItems(startedCourses);
-      writeMyLearningCache(startedCourses);
-    } catch (e) {
-      if (!isMountedRef.current) return;
-      setErr(ui.failed);
-      setItems([]);
-    } finally {
-      if (!silent && isMountedRef.current) setLoading(false);
-    }
-  }, [ui.failed]);
+            const progressPct = calcCoursePctCombined({
+              completedUnits,
+              totalUnits,
+              completedLessons,
+              totalLessons,
+            });
 
-  // ✅ cache first, then background refresh
+            const isCompletedCourse = totalUnits > 0 && completedUnits >= totalUnits;
+            const saved = savedMap.get(key);
+
+            return {
+              courseKey: key,
+              title: c?.title || ui.untitled,
+              title_km: c?.title_km || null,
+              thumbnail: c?.thumbnail_url || "",
+              completedLessons,
+              totalLessons,
+              completedUnits,
+              totalUnits,
+              progressPct,
+              isCompletedCourse,
+
+              // truth
+              is_saved: saved ? !!saved.is_saved : false,
+
+              // ✅ IMPORTANT: enrolled -> NEVER show in Saved for Later
+              isEnrolled: true,
+            };
+          })
+          .filter(Boolean);
+
+        const enrolledKeys = new Set(progressItems.map((x) => String(x.courseKey)));
+
+        // 2) saved-only courses (saved but NOT enrolled)
+        const savedOnlyItems = [];
+        for (const [key, s] of savedMap.entries()) {
+          if (!s?.is_saved) continue;
+          if (enrolledKeys.has(String(key))) continue;
+
+          savedOnlyItems.push({
+            courseKey: String(key),
+            title: s.title,
+            title_km: s.title_km,
+            thumbnail: s.thumbnail,
+
+            completedLessons: 0,
+            totalLessons: s.totalLessons,
+            completedUnits: 0,
+            totalUnits: s.totalUnits,
+            progressPct: 0,
+            isCompletedCourse: false,
+
+            is_saved: true,
+            isEnrolled: false,
+          });
+        }
+
+        const merged = [...progressItems, ...savedOnlyItems].sort((a, b) => (b.progressPct || 0) - (a.progressPct || 0));
+
+        if (!isMountedRef.current) return;
+        setItems(merged);
+        writeMyLearningCache(merged);
+      } catch (e) {
+        console.error(e);
+        if (!isMountedRef.current) return;
+        setErr(ui.failed);
+        setItems([]);
+      } finally {
+        if (!silent && isMountedRef.current) setLoading(false);
+      }
+    },
+    [ui.failed, ui.untitled]
+  );
+
+  // cache first, then background refresh
   useEffect(() => {
     isMountedRef.current = true;
 
@@ -354,13 +572,15 @@ export default function MyLearning() {
     };
   }, [loadAll]);
 
-  // ✅ refresh when progress changed
+  // auto refresh when progress OR saved changes
   useEffect(() => {
     const refreshIfDirty = () => {
-      const dirty = localStorage.getItem("progress_dirty") === "1";
-      if (!dirty) return;
+      const dirtyProgress = localStorage.getItem("progress_dirty") === "1";
+      const dirtySaved = localStorage.getItem("courses_dirty") === "1";
+      if (!dirtyProgress && !dirtySaved) return;
 
       localStorage.removeItem("progress_dirty");
+      localStorage.removeItem("courses_dirty");
       loadAll({ silent: true });
     };
 
@@ -371,95 +591,317 @@ export default function MyLearning() {
 
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("progress-dirty", refreshIfDirty);
+    window.addEventListener("courses-changed", refreshIfDirty);
 
     return () => {
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("progress-dirty", refreshIfDirty);
+      window.removeEventListener("courses-changed", refreshIfDirty);
     };
   }, [loadAll]);
 
-  const handleContinue = useCallback(
-    async (c) => {
-      if (!c?.courseKey) return;
+  /* ===================== certificate download ===================== */
+  const onDownloadCert = useCallback(
+    async (courseObj) => {
+      const courseKey = String(courseObj?.courseKey || "");
+      if (!courseKey) return;
 
-      if (c?.lastUnitId && c?.lastLessonId) {
-        navigate(`/course/${c.courseKey}/unit/${c.lastUnitId}/lesson/${c.lastLessonId}`);
-        return;
-      }
+      setDownloading((p) => ({ ...p, [courseKey]: true }));
+      setStatsErr(null);
 
       try {
-        const cr = await api.get(`/courses/${c.courseKey}`);
-        const course = cr?.data || {};
-        const units = Array.isArray(course?.units) ? course.units : [];
-
-        const firstUnit = units[0];
-        const lessons = Array.isArray(firstUnit?.lessons) ? firstUnit.lessons : [];
-        const firstLesson = lessons[0];
-
-        if (firstUnit?.id && firstLesson?.id) {
-          navigate(`/course/${c.courseKey}/unit/${firstUnit.id}/lesson/${firstLesson.id}`);
+        const { data } = await api.get(`/certificates/course/${courseKey}`);
+        if (!data?.completed) {
+          setStatsErr(ui.certNotReady);
           return;
         }
 
-        navigate(`/courses/${c.courseKey}`);
-      } catch {
-        navigate(`/courses/${c.courseKey}`);
+        const courseTitle = data?.course_title || courseObj?.title || ui.untitled;
+        const timeSpentMinutes = Number(data?.time_spent_minutes || 0);
+
+        setCertPreview({
+          userName: userName || "Student",
+          courseTitle,
+          timeSpentMinutes,
+        });
+
+        await new Promise((r) => setTimeout(r, 60));
+
+        if (!certRef.current) {
+          setStatsErr(ui.certPreviewNotReady);
+          return;
+        }
+
+        const canvas = await html2canvas(certRef.current, {
+          scale: 2.5,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+        });
+
+        const dataUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `Certificate - ${courseTitle}.png`;
+        link.click();
+      } catch (e) {
+        console.error(e);
+        setStatsErr(ui.certDownloadFail);
+      } finally {
+        setDownloading((p) => ({ ...p, [courseKey]: false }));
+        setCertPreview(null);
       }
     },
-    [navigate]
+    [ui, userName]
   );
 
-  const countText = useMemo(() => {
-    if (loading) return "…";
-    return `${items.length} ${ui.started}`;
-  }, [loading, items.length, ui.started]);
+  /* =====================
+     continue resolver (unchanged)
+  ===================== */
+  const handleContinue = useCallback(
+    async (c) => {
+      const courseSlug = String(c?.courseKey || "");
+      if (!courseSlug) return;
+
+      setStatsErr(null);
+      setContinuing((p) => ({ ...p, [courseSlug]: true }));
+
+      try {
+        const cr = await api.get(`/courses/${courseSlug}`);
+        const course = cr?.data || {};
+        const units = Array.isArray(course?.units) ? course.units : [];
+
+        let progressData = null;
+        try {
+          const pr = await api.get(`/progress/course/${courseSlug}`);
+          progressData = pr?.data || null;
+        } catch {
+          navigate(`/courses/${courseSlug}`);
+          return;
+        }
+
+        const completedIds = Array.isArray(progressData?.completed_lesson_ids)
+          ? progressData.completed_lesson_ids.map((x) => Number(x))
+          : [];
+        const completedLessonIds = new Set(completedIds);
+
+        const unitProgressMap = progressData?.unit_progress || {};
+
+        const isLessonCompleted = (lessonId) => completedLessonIds.has(Number(lessonId));
+        const isUnitCompleted = (unitId) => !!unitProgressMap?.[String(unitId)]?.completed;
+        const isCodingCompleted = (unitId) => !!unitProgressMap?.[String(unitId)]?.coding_completed;
+        const isQcmCompleted = (unitId) => !!unitProgressMap?.[String(unitId)]?.quiz_passed;
+
+        for (let uIndex = 0; uIndex < units.length; uIndex++) {
+          const u = units[uIndex];
+          const lessons = Array.isArray(u?.lessons) ? u.lessons : [];
+          const unitIdStr = String(u?.id);
+
+          if (uIndex > 0) {
+            const prev = units[uIndex - 1];
+            if (prev && !isUnitCompleted(prev.id)) {
+              const prevLessons = Array.isArray(prev?.lessons) ? prev.lessons : [];
+
+              for (let i = 0; i < prevLessons.length; i++) {
+                if (!isLessonCompleted(prevLessons[i].id)) {
+                  navigate(`/course/${courseSlug}/unit/${prev.id}/lesson/${prevLessons[i].id}`);
+                  return;
+                }
+              }
+
+              if (hasUnitCoding(prev) && !isCodingCompleted(prev.id)) {
+                navigate(`/course/${courseSlug}/unit/${prev.id}/coding`);
+                return;
+              }
+
+              if ((Number(prev?.qcm_count) || 0) > 0 && !isQcmCompleted(prev.id)) {
+                navigate(`/course/${courseSlug}/unit/${prev.id}/qcm`);
+                return;
+              }
+
+              if (prevLessons[0]?.id) {
+                navigate(`/course/${courseSlug}/unit/${prev.id}/lesson/${prevLessons[0].id}`);
+                return;
+              }
+            }
+          }
+
+          for (let lIndex = 0; lIndex < lessons.length; lIndex++) {
+            const lid = lessons[lIndex]?.id;
+            if (!lid) continue;
+            if (!isLessonCompleted(lid)) {
+              navigate(`/course/${courseSlug}/unit/${u.id}/lesson/${lid}`);
+              return;
+            }
+          }
+
+          if (hasUnitCoding(u) && !isCodingCompleted(unitIdStr)) {
+            navigate(`/course/${courseSlug}/unit/${u.id}/coding`);
+            return;
+          }
+
+          if ((Number(u?.qcm_count) || 0) > 0 && !isQcmCompleted(unitIdStr)) {
+            navigate(`/course/${courseSlug}/unit/${u.id}/qcm`);
+            return;
+          }
+        }
+
+        navigate(`/courses/${courseSlug}`);
+      } catch (e) {
+        console.error(e);
+        setStatsErr(ui.continueFail);
+        navigate(`/courses/${courseSlug}`);
+      } finally {
+        setContinuing((p) => ({ ...p, [courseSlug]: false }));
+      }
+    },
+    [navigate, ui.continueFail]
+  );
+
+  /* =====================
+     TAB subsets (filtered + sorted subset)
+  ===================== */
+  const inProgressItems = useMemo(() => {
+    return items
+      .filter((c) => c.isEnrolled && !c.isCompletedCourse && (c.progressPct || 0) > 0)
+      .slice()
+      .sort((a, b) => (b.progressPct || 0) - (a.progressPct || 0));
+  }, [items]);
+
+  const completedItems = useMemo(() => {
+    return items
+      .filter((c) => c.isEnrolled && !!c.isCompletedCourse)
+      .slice()
+      .sort((a, b) => (b.progressPct || 0) - (a.progressPct || 0));
+  }, [items]);
+
+  const savedForLaterItems = useMemo(() => {
+    // ✅ Saved for Later = saved AND NOT enrolled
+    return items
+      .filter((c) => !!c.is_saved && !c.isEnrolled)
+      .slice()
+      .sort((a, b) => (b.totalLessons || 0) - (a.totalLessons || 0));
+  }, [items]);
+
+  const tabCounts = useMemo(() => {
+    return {
+      inprogress: inProgressItems.length,
+      completed: completedItems.length,
+      saved: savedForLaterItems.length,
+    };
+  }, [inProgressItems.length, completedItems.length, savedForLaterItems.length]);
+
+  const renderGrid = (list, mode) => {
+    if (loading) return <div className="ml-empty">{ui.loading}</div>;
+    if (!list.length) return <div className="ml-empty">{ui.empty}</div>;
+
+    return (
+      <Row className="g-3">
+        {list.map((c) => {
+          const courseKey = String(c.courseKey);
+          const isContinuing = !!continuing[courseKey];
+
+          return (
+            <Col md={6} key={courseKey}>
+              {mode === "saved" ? (
+                <CourseCardSaved
+                  c={c}
+                  ui={ui}
+                  pickText={pickText}
+                  onDetails={() => navigate(`/courses/${courseKey}`)}
+                />
+              ) : (
+                <CourseCardFull
+                  c={c}
+                  downloading={downloading}
+                  isContinuing={isContinuing}
+                  ui={ui}
+                  pickText={pickText}
+                  onContinue={() => !isContinuing && handleContinue(c)}
+                  onDetails={() => navigate(`/courses/${courseKey}`)}
+                  onDownloadCert={() => onDownloadCert(c)}
+                />
+              )}
+            </Col>
+          );
+        })}
+      </Row>
+    );
+  };
 
   return (
-    <div className="dash-page">
-      <Container className="dash-container">
+    <div className="ml-page">
+      <Container className="ml-container">
         {err && <Alert variant="danger">{err}</Alert>}
+        {statsErr && <Alert variant="warning">{statsErr}</Alert>}
 
-        <div className="d-flex align-items-center justify-content-between mb-3">
+        {/* Hidden certificate render for download */}
+        <div style={{ position: "fixed", left: "-99999px", top: 0, background: "#fff" }}>
+          <div ref={certRef}>
+            {certPreview && (
+              <CertificateSheet
+                userName={certPreview.userName}
+                courseTitle={certPreview.courseTitle}
+                timeSpentMinutes={certPreview.timeSpentMinutes}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Header */}
+        <div className="ml-header">
           <div>
-            <h2 style={{ margin: 0, color: "#fff" }}>{ui.pageTitle}</h2>
-            <div className="dash-muted" style={{ fontSize: 12 }}>
-              {ui.subtitle} {countText}
-            </div>
+            <h2 className="ml-title">{ui.pageTitle}</h2>
+            <div className="ml-subtitle">{ui.subtitle}</div>
           </div>
 
-          <div className="d-flex gap-2 flex-wrap">
+          <div className="ml-header-actions">
             <Button variant="outline-light" onClick={() => navigate("/dashboard")}>
               <i className="bi bi-arrow-left" /> {ui.back}
             </Button>
-
             <Button variant="outline-light" onClick={() => navigate("/courses")}>
               {ui.browseCourses}
-            </Button>
-
-            <Button variant="outline-light" onClick={() => loadAll({ silent: false })} disabled={loading}>
-              {ui.refresh}
             </Button>
           </div>
         </div>
 
-        {loading ? (
-          <div style={{ padding: 16, color: "#fff" }}>{ui.loading}</div>
-        ) : items.length === 0 ? (
-          <div style={{ padding: 16, color: "#fff" }}>{ui.empty}</div>
-        ) : (
-          <Row className="g-3">
-            {items.map((c) => (
-              <Col md={6} key={c.courseKey}>
-                <CourseCardDash
-                  c={c}
-                  ui={ui}
-                  onContinue={handleContinue}
-                  onDetails={(course) => navigate(`/courses/${course.courseKey}`)}
-                />
-              </Col>
-            ))}
-          </Row>
-        )}
+        {/* Modern Tabs */}
+        <div className="ml-tabsBar">
+          <button
+            type="button"
+            className={`ml-tabBtn ${activeTab === "inprogress" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("inprogress")}
+          >
+            {ui.tabInProgress}
+            <span className="ml-tabCount">{tabCounts.inprogress}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`ml-tabBtn ${activeTab === "completed" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("completed")}
+          >
+            {ui.tabCompleted}
+            <span className="ml-tabCount">{tabCounts.completed}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`ml-tabBtn ${activeTab === "saved" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("saved")}
+          >
+            {ui.tabSaved}
+            <span className="ml-tabCount">{tabCounts.saved}</span>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="ml-content">
+          {activeTab === "inprogress" && renderGrid(inProgressItems, "full")}
+          {activeTab === "completed" && renderGrid(completedItems, "full")}
+          {activeTab === "saved" && renderGrid(savedForLaterItems, "saved")}
+        </div>
       </Container>
     </div>
   );

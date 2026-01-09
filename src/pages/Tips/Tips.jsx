@@ -109,11 +109,23 @@ export default function Tips() {
     return (
       <div className="tips-page">
         <Container className="tips-container">
-          <div style={{ padding: 24, color: "white" }}>{ui.loading}</div>
+          <div className="tips-loader">
+            <div className="loader-wrapper">
+              <div className="loader"></div>
+              <div className="letter-wrapper">
+                {"Loading...".split("").map((char, i) => (
+                  <span key={i} className="loader-letter">
+                    {char}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </Container>
       </div>
     );
   }
+
 
   return (
     <div className="tips-page">
@@ -149,8 +161,8 @@ export default function Tips() {
               ? tip.cover_url.startsWith("http")
                 ? tip.cover_url
                 : tip.cover_url.startsWith("/storage/")
-                ? `http://127.0.0.1:8000${tip.cover_url}`
-                : `http://127.0.0.1:8000/storage/${tip.cover_url}`
+                  ? `http://127.0.0.1:8000${tip.cover_url}`
+                  : `http://127.0.0.1:8000/storage/${tip.cover_url}`
               : null;
 
             const dateText = (() => {

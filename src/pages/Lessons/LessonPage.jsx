@@ -1,8 +1,9 @@
+// LessonPage.jsx
+import api from "../../lib/api";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import LessonContent from "./LessonContent";
 import "./LessonPage.css";
-import api from "../../lib/api";
 
 /* ---------------------------------
    Helpers (Coding hasOne, backward compatible)
@@ -14,12 +15,60 @@ const getUnitCodingEn = (unitObj) =>
   unitObj?.coding_exercise ??
   null;
 
-const getUnitCodingKm = (unitObj) =>
-  unitObj?.codingExerciseKm ??
-  unitObj?.coding_exercise_km ??
-  null;
+const getUnitCodingKm = (unitObj) => unitObj?.codingExerciseKm ?? unitObj?.coding_exercise_km ?? null;
 
 const hasUnitCoding = (unitObj) => !!getUnitCodingEn(unitObj);
+
+/* ---------------------------------
+   ✅ Progress Cache (per course)
+---------------------------------- */
+const PROGRESS_CACHE_KEY = "course_progress_v2";
+const PROGRESS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function readProgressCache(courseKey) {
+  try {
+    const raw = localStorage.getItem(PROGRESS_CACHE_KEY);
+    if (!raw) return null;
+
+    const allCache = JSON.parse(raw);
+    const courseCache = allCache?.[String(courseKey)];
+    if (!courseCache) return null;
+
+    const ts = courseCache?.updatedAt ? new Date(courseCache.updatedAt).getTime() : 0;
+    if (!ts || Date.now() - ts > PROGRESS_CACHE_TTL_MS) return null;
+
+    return {
+      completedLessonIds: courseCache.completedLessonIds || [],
+      unitProgressMap: courseCache.unitProgressMap || {},
+      isEnrolled: courseCache.isEnrolled || false,
+      certCompleted: courseCache.certCompleted || false,
+      certCompletedAt: courseCache.certCompletedAt || null,
+      spentMinutes: courseCache.spentMinutes || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeProgressCache(courseKey, data) {
+  try {
+    const key = String(courseKey);
+    const raw = localStorage.getItem(PROGRESS_CACHE_KEY);
+    const allCache = raw ? JSON.parse(raw) : {};
+
+    allCache[key] = {
+      completedLessonIds: data.completedLessonIds || [],
+      unitProgressMap: data.unitProgressMap || {},
+      isEnrolled: data.isEnrolled || false,
+      certCompleted: data.certCompleted || false,
+      certCompletedAt: data.certCompletedAt || null,
+      spentMinutes: data.spentMinutes || 0,
+      updatedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(allCache));
+  } catch { }
+}
 
 export default function LessonPage() {
   const { courseId, unitId, lessonId } = useParams(); // courseId is SLUG
@@ -46,26 +95,38 @@ export default function LessonPage() {
 
   const pickText = useCallback((en, km) => (lang === "km" ? km || en || "" : en || km || ""), [lang]);
 
-  // enrollment guard (NO auto-enroll)
-  const [enrollCheckLoading, setEnrollCheckLoading] = useState(true);
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  // ✅ slug everywhere
+  const courseKey = useMemo(() => String(course?.slug || courseId), [course?.slug, courseId]);
 
-  // progress from DB
-  const [progressLoading, setProgressLoading] = useState(true);
-  const [completedLessonIds, setCompletedLessonIds] = useState(() => new Set());
-  const [unitProgressMap, setUnitProgressMap] = useState({});
+  // ✅ enrollment guard (with instant cache)
+  const [enrollCheckLoading, setEnrollCheckLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState(() => {
+    const cached = readProgressCache(courseId);
+    return !!cached?.isEnrolled;
+  });
+
+  // ✅ progress from DB (with instant cache)
+  const [progressLoading, setProgressLoading] = useState(() => {
+    const cached = readProgressCache(courseId);
+    return !cached;
+  });
+  const [completedLessonIds, setCompletedLessonIds] = useState(() => {
+    const cached = readProgressCache(courseId);
+    return new Set(cached?.completedLessonIds || []);
+  });
+  const [unitProgressMap, setUnitProgressMap] = useState(() => {
+    const cached = readProgressCache(courseId);
+    return cached?.unitProgressMap || {};
+  });
 
   // saving flags
   const [savingLesson, setSavingLesson] = useState(false);
 
-  const toastLock = useCallback(
-    (msg) => {
-      setLockMsg(msg);
-      window.clearTimeout(window.__lock_toast);
-      window.__lock_toast = window.setTimeout(() => setLockMsg(""), 1800);
-    },
-    []
-  );
+  const toastLock = useCallback((msg) => {
+    setLockMsg(msg);
+    window.clearTimeout(window.__lock_toast);
+    window.__lock_toast = window.setTimeout(() => setLockMsg(""), 1800);
+  }, []);
 
   /* ----------------------------
      Load course detail (by slug)
@@ -95,9 +156,6 @@ export default function LessonPage() {
     };
   }, [courseId]);
 
-  // ✅ slug everywhere
-  const courseKey = useMemo(() => String(course?.slug || courseId), [course?.slug, courseId]);
-
   const units = useMemo(() => (Array.isArray(course?.units) ? course.units : []), [course]);
 
   const unitIdNum = Number(unitId);
@@ -120,7 +178,6 @@ export default function LessonPage() {
 
   /* ----------------------------
      ✅ Local resume keys (FRONTEND)
-     courseKey is slug, so it matches CourseDetail continueLearning()
   ---------------------------- */
   const setLocalResume = useCallback(
     (type, uId, lId) => {
@@ -128,30 +185,28 @@ export default function LessonPage() {
         localStorage.setItem(`resume_type_v1:${courseKey}`, String(type || ""));
         localStorage.setItem(`resume_unit_v1:${courseKey}`, String(uId || ""));
         if (lId != null) localStorage.setItem(`resume_lesson_v1:${courseKey}`, String(lId));
-      } catch {}
+      } catch { }
     },
     [courseKey]
   );
 
-  // ✅ When lesson page opens, mark resume as "lesson"
   useEffect(() => {
     if (!courseKey) return;
     if (!unitIdNum || !lessonIdNum) return;
     setLocalResume("lesson", unitIdNum, lessonIdNum);
   }, [courseKey, unitIdNum, lessonIdNum, setLocalResume]);
 
-  // helper to tell Dashboard/CourseDetail to refresh later (✅ set BOTH keys)
+  // ✅ tell Dashboard/CourseDetail to refresh later
   const markProgressDirty = useCallback(() => {
     try {
       localStorage.setItem("progress_dirty", "1");
       localStorage.setItem("progress_dirty_course", String(courseKey));
-    } catch {}
+      window.dispatchEvent(new Event("dashboard-cache-updated"));
+    } catch { }
   }, [courseKey]);
 
   /* ----------------------------
-     Enrollment check (NO auto-enroll)
-     - if progress succeeds => enrolled
-     - if 403 => not enrolled (redirect to CourseDetail)
+     ✅ Enrollment check (cache first, then background)
   ---------------------------- */
   useEffect(() => {
     let alive = true;
@@ -159,14 +214,29 @@ export default function LessonPage() {
     (async () => {
       if (!courseKey) return;
 
-      setEnrollCheckLoading(true);
+      const cached = readProgressCache(courseKey);
+      if (cached) {
+        setIsEnrolled(!!cached.isEnrolled);
+        setEnrollCheckLoading(false);
+      } else {
+        setEnrollCheckLoading(true);
+      }
+
       try {
         await api.get(`/progress/course/${courseKey}`);
         if (!alive) return;
         setIsEnrolled(true);
-      } catch (e) {
+
+        writeProgressCache(courseKey, {
+          ...cached,
+          isEnrolled: true,
+          completedLessonIds: cached?.completedLessonIds || Array.from(completedLessonIds),
+          unitProgressMap: cached?.unitProgressMap || unitProgressMap,
+        });
+      } catch {
         if (!alive) return;
         setIsEnrolled(false);
+        writeProgressCache(courseKey, { ...cached, isEnrolled: false });
       } finally {
         if (alive) setEnrollCheckLoading(false);
       }
@@ -175,57 +245,135 @@ export default function LessonPage() {
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseKey]);
 
   /* ----------------------------
-     Refresh DB progress (ONLY if enrolled)
+     ✅ Refresh DB progress
   ---------------------------- */
-  const refreshProgress = useCallback(async () => {
-    if (!courseKey || !isEnrolled) return;
-    setProgressLoading(true);
-    try {
-      const { data } = await api.get(`/progress/course/${courseKey}`);
-      const ids = Array.isArray(data?.completed_lesson_ids) ? data.completed_lesson_ids : [];
-      setCompletedLessonIds(new Set(ids.map((x) => Number(x))));
-      setUnitProgressMap(data?.unit_progress || {});
-    } catch (e) {
-      console.error("Failed to load course progress:", e);
-    } finally {
-      setProgressLoading(false);
-    }
-  }, [courseKey, isEnrolled]);
+  const progressLoadingRef = useRef(false);
+
+  const refreshProgress = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!courseKey || !isEnrolled) return;
+
+      if (progressLoadingRef.current) return;
+      progressLoadingRef.current = true;
+
+      const cached = readProgressCache(courseKey);
+      if (cached) {
+        setCompletedLessonIds(new Set(cached.completedLessonIds || []));
+        setUnitProgressMap(cached.unitProgressMap || {});
+        if (!silent) setProgressLoading(false);
+      } else if (!silent) {
+        setProgressLoading(true);
+      }
+
+      try {
+        const { data } = await api.get(`/progress/course/${courseKey}`);
+        const ids = Array.isArray(data?.completed_lesson_ids) ? data.completed_lesson_ids : [];
+        const idsArray = ids.map((x) => Number(x));
+        const up = data?.unit_progress || {};
+
+        setCompletedLessonIds(new Set(idsArray));
+        setUnitProgressMap(up);
+
+        writeProgressCache(courseKey, {
+          ...cached,
+          isEnrolled: true,
+          completedLessonIds: idsArray,
+          unitProgressMap: up,
+        });
+      } catch {
+        // ignore; keep cache
+      } finally {
+        if (!silent) setProgressLoading(false);
+        progressLoadingRef.current = false;
+      }
+    },
+    [courseKey, isEnrolled]
+  );
 
   useEffect(() => {
     if (!isEnrolled) return;
-    refreshProgress();
+    refreshProgress({ silent: false });
   }, [isEnrolled, refreshProgress]);
 
-  /* ----------------------------
-     Resume ping (backend)
-     NOTE: backend only stores unit_id + lesson_id (no type)
-  ---------------------------- */
-  const pingResume = useCallback(async () => {
-    try {
-      await api.post(`/progress/course/${courseKey}/resume`, {
-        unit_id: Number(unitIdNum),
-        lesson_id: Number(lessonIdNum),
-      });
-    } catch {}
-  }, [courseKey, unitIdNum, lessonIdNum]);
+  useEffect(() => {
+    if (!isEnrolled) return;
+    if (!courseKey) return;
 
+    let alive = true;
+    const tick = async () => {
+      if (!alive) return;
+      await refreshProgress({ silent: true });
+    };
+
+    const interval = window.setInterval(tick, 20000);
+    const onFocus = () => tick();
+    const onVis = () => {
+      if (document.visibilityState === "visible") tick();
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      alive = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [isEnrolled, courseKey, refreshProgress]);
+
+  /* ----------------------------
+     ✅ Resume ping schedule
+  ---------------------------- */
   useEffect(() => {
     if (!isEnrolled) return;
     if (!courseKey || !unitIdNum || !lessonIdNum) return;
-    pingResume();
-  }, [isEnrolled, courseKey, unitIdNum, lessonIdNum, pingResume]);
+
+    let alive = true;
+    let timer = null;
+
+    const safePing = async () => {
+      if (!alive) return;
+      try {
+        await api.post(`/progress/course/${courseKey}/resume`, {
+          unit_id: Number(unitIdNum),
+          lesson_id: Number(lessonIdNum),
+          type: "lesson",
+        });
+      } catch { }
+    };
+
+    safePing();
+    timer = window.setInterval(safePing, 25000);
+
+    const onUnload = () => {
+      try {
+        api.post(`/progress/course/${courseKey}/resume`, {
+          unit_id: Number(unitIdNum),
+          lesson_id: Number(lessonIdNum),
+          type: "lesson",
+        });
+      } catch { }
+    };
+
+    window.addEventListener("beforeunload", onUnload);
+
+    return () => {
+      alive = false;
+      if (timer) window.clearInterval(timer);
+      window.removeEventListener("beforeunload", onUnload);
+      safePing();
+    };
+  }, [isEnrolled, courseKey, unitIdNum, lessonIdNum]);
 
   /* ----------------------------
      Guards (DB)
   ---------------------------- */
-  const isUnitCompleted = useCallback(
-    (unitIdStr) => !!unitProgressMap?.[String(unitIdStr)]?.completed,
-    [unitProgressMap]
-  );
+  const isUnitCompleted = useCallback((unitIdStr) => !!unitProgressMap?.[String(unitIdStr)]?.completed, [unitProgressMap]);
 
   const isLessonCompleted = useCallback(
     (lessonIdNumArg) => completedLessonIds.has(Number(lessonIdNumArg)),
@@ -292,7 +440,7 @@ export default function LessonPage() {
   );
 
   /* ----------------------------
-     URL typing guard: if lesson locked, redirect to last unlocked
+     URL typing guard
   ---------------------------- */
   useEffect(() => {
     if (!unit || lessonIndex < 0) return;
@@ -323,7 +471,6 @@ export default function LessonPage() {
     courseKey,
   ]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) setOpenMenu(false);
@@ -333,7 +480,7 @@ export default function LessonPage() {
   }, []);
 
   /* ----------------------------
-     ✅ Completion helper (supports background save)
+     ✅ Completion helper
   ---------------------------- */
   const completeCurrentLesson = useCallback(
     async ({ refresh = true } = {}) => {
@@ -342,29 +489,50 @@ export default function LessonPage() {
       if (!idNum) return;
       if (!isEnrolled) return;
 
-      // optimistic update
-      if (!isLessonCompleted(idNum)) {
-        setCompletedLessonIds((prev) => {
-          const next = new Set(prev);
-          next.add(idNum);
-          return next;
-        });
-      } else {
-        return;
-      }
-
       if (savingLesson) return;
+      if (isLessonCompleted(idNum)) return;
+
+      setCompletedLessonIds((prev) => {
+        const next = new Set(prev);
+        next.add(idNum);
+
+        writeProgressCache(courseKey, {
+          isEnrolled: true,
+          completedLessonIds: Array.from(next),
+          unitProgressMap: unitProgressMap,
+        });
+
+        return next;
+      });
 
       setSavingLesson(true);
       try {
-        await api.post("/progress/lesson/complete", { unit_lesson_id: idNum });
-        markProgressDirty();
+        const res = await api.post("/progress/lesson/complete", { unit_lesson_id: idNum });
 
-        // ✅ only refresh when needed (next/prev gating)
-        if (refresh) await refreshProgress();
+        markProgressDirty();
+        window.dispatchEvent(new Event("xp-updated"));
+
+        if (refresh) {
+          await refreshProgress({ silent: true });
+        }
+
+        return res?.data;
       } catch (e) {
         console.error("Failed to complete lesson:", e);
         toastLock(pickText("❌ Failed to save progress.", "❌ រក្សាទុកវឌ្ឍនភាពបរាជ័យ។"));
+
+        setCompletedLessonIds((prev) => {
+          const next = new Set(prev);
+          next.delete(idNum);
+
+          writeProgressCache(courseKey, {
+            isEnrolled: true,
+            completedLessonIds: Array.from(next),
+            unitProgressMap: unitProgressMap,
+          });
+
+          return next;
+        });
       } finally {
         setSavingLesson(false);
       }
@@ -372,8 +540,10 @@ export default function LessonPage() {
     [
       lesson?.id,
       isEnrolled,
-      isLessonCompleted,
       savingLesson,
+      isLessonCompleted,
+      courseKey,
+      unitProgressMap,
       markProgressDirty,
       refreshProgress,
       toastLock,
@@ -381,18 +551,14 @@ export default function LessonPage() {
     ]
   );
 
-  /* ----------------------------
-     Helper: temp completed set (fix double-click)
-  ---------------------------- */
   const makeTempCompletedSet = useCallback(() => {
     const temp = new Set(completedLessonIds);
-    if (lesson?.id) temp.add(Number(lesson.id)); // treat current as completed immediately
+    if (lesson?.id) temp.add(Number(lesson.id));
     return temp;
   }, [completedLessonIds, lesson?.id]);
 
   /* ----------------------------
      Navigation actions
-     NOTE: For in-course navigation we still await save/refresh (to keep guards correct)
   ---------------------------- */
   const goLesson = useCallback(
     async (toLessonId) => {
@@ -402,9 +568,10 @@ export default function LessonPage() {
       const ok = canOpenLessonDB(currentUnitIndex, unit, toIndex);
       if (!ok) return toastLock(pickText("🔒 Complete the previous lesson first.", "🔒 សូមបញ្ចប់មេរៀនមុនសិន។"));
 
-      await completeCurrentLesson({ refresh: true });
       setLocalResume("lesson", unitIdNum, Number(toLessonId));
       navigate(`/course/${courseKey}/unit/${unit.id}/lesson/${toLessonId}`);
+
+      completeCurrentLesson({ refresh: false });
     },
     [
       unit,
@@ -420,16 +587,17 @@ export default function LessonPage() {
     ]
   );
 
-  const goPrev = useCallback(async () => {
+  const goPrev = useCallback(() => {
     if (!unit?.lessons?.length) return;
     if (lessonIndex <= 0) return toastLock(pickText("You're on the first lesson.", "អ្នកនៅមេរៀនដំបូង។"));
 
     const prev = unit.lessons[lessonIndex - 1];
     if (!prev?.id) return;
 
-    await completeCurrentLesson({ refresh: true });
     setLocalResume("lesson", unitIdNum, Number(prev.id));
     navigate(`/course/${courseKey}/unit/${unit.id}/lesson/${prev.id}`);
+
+    completeCurrentLesson({ refresh: false });
   }, [
     unit,
     lessonIndex,
@@ -442,7 +610,7 @@ export default function LessonPage() {
     unitIdNum,
   ]);
 
-  const goCoding = useCallback(async () => {
+  const goCoding = useCallback(() => {
     if (!unit) return;
 
     const tempCompleted = makeTempCompletedSet();
@@ -454,9 +622,10 @@ export default function LessonPage() {
       );
     }
 
-    await completeCurrentLesson({ refresh: true });
     setLocalResume("coding", unitIdNum, lessonIdNum);
     navigate(`/course/${courseKey}/unit/${unit.id}/coding`);
+
+    completeCurrentLesson({ refresh: false });
   }, [
     unit,
     makeTempCompletedSet,
@@ -472,7 +641,7 @@ export default function LessonPage() {
     lessonIdNum,
   ]);
 
-  const goQCM = useCallback(async () => {
+  const goQCM = useCallback(() => {
     if (!unit) return;
     if (!hasQcm) return toastLock(pickText("❗ No quiz found for this unit.", "❗ មិនមានសំណួរសម្រាប់ជំពូកនេះទេ។"));
 
@@ -487,9 +656,10 @@ export default function LessonPage() {
       );
     }
 
-    await completeCurrentLesson({ refresh: true });
     setLocalResume("qcm", unitIdNum, lessonIdNum);
     navigate(`/course/${courseKey}/unit/${unit.id}/qcm`);
+
+    completeCurrentLesson({ refresh: false });
   }, [
     unit,
     hasQcm,
@@ -510,9 +680,12 @@ export default function LessonPage() {
   const goNext = useCallback(async () => {
     if (!unit?.lessons?.length) return;
 
-    await completeCurrentLesson({ refresh: true });
+    const res = await completeCurrentLesson({ refresh: false });
 
-    // next lesson
+    if (Number(res?.xp_awarded || 0) > 0) {
+      window.dispatchEvent(new Event("xp-updated"));
+    }
+
     if (lessonIndex < lastLessonIndex) {
       const next = unit.lessons[lessonIndex + 1];
       setLocalResume("lesson", unitIdNum, Number(next.id));
@@ -520,17 +693,8 @@ export default function LessonPage() {
       return;
     }
 
-    // last lesson → coding if exists
-    if (hasCoding) {
-      await goCoding();
-      return;
-    }
-
-    // last lesson → quiz if exists
-    if (hasQcm) {
-      await goQCM();
-      return;
-    }
+    if (hasCoding) return goCoding();
+    if (hasQcm) return goQCM();
 
     toastLock(pickText("✅ Unit completed.", "✅ បានបញ្ចប់ជំពូក។"));
   }, [
@@ -565,12 +729,24 @@ export default function LessonPage() {
   /* ----------------------------
      Render guards
   ---------------------------- */
-  if (loading) return <h2 style={{ padding: 40, color: "white" }}>{pickText("Loading...", "កំពុងផ្ទុក...")}</h2>;
-  if (!course) return <h2 style={{ padding: 40, color: "white" }}>{pickText("Course not found", "រកមិនឃើញវគ្គសិក្សា")}</h2>;
-  if (!unit) return <h2 style={{ padding: 40, color: "white" }}>{pickText("Unit not found", "រកមិនឃើញជំពូក")}</h2>;
-  if (!lesson) return <h2 style={{ padding: 40, color: "white" }}>{pickText("Lesson not found", "រកមិនឃើញមេរៀន")}</h2>;
+  if (loading) {
+    return (
+      <div className="lesson-page">
+        <div className="lesson-loader">
+          <div className="loader-l">
+            {pickText("LOADING LESSON", "កំពុងផ្ទុក មេរៀន")}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // ✅ bilingual display values
+  if (!course)
+    return <h2 style={{ padding: 40, color: "white" }}>{pickText("Course not found", "រកមិនឃើញវគ្គសិក្សា")}</h2>;
+  if (!unit) return <h2 style={{ padding: 40, color: "white" }}>{pickText("Unit not found", "រកមិនឃើញជំពូក")}</h2>;
+  if (!lesson)
+    return <h2 style={{ padding: 40, color: "white" }}>{pickText("Lesson not found", "រកមិនឃើញមេរៀន")}</h2>;
+
   const courseTitleUI = pickText(course?.title, course?.title_km);
   const unitTitleUI = pickText(unit?.title, unit?.title_km);
   const lessonTitleUI = pickText(lesson?.title, lesson?.title_km);
@@ -580,8 +756,17 @@ export default function LessonPage() {
   const codingKm = getUnitCodingKm(unit);
   const codingTitleUI = pickText(codingEn?.title, codingKm?.title_km || codingKm?.title);
 
+  // ✅ fixed footer sizing (matches desktop + stable on mobile)
+  const FOOTER_H = 64;
+
   return (
-    <div className="lesson-page">
+    <div
+      className="lesson-page"
+      style={{
+        minHeight: "100dvh",
+        paddingBottom: `calc(${FOOTER_H}px + env(safe-area-inset-bottom, 0px))`,
+      }}
+    >
       <div className="lesson-header">
         <code>{`import Lesson from '${courseTitleUI}'`}</code>
       </div>
@@ -594,7 +779,9 @@ export default function LessonPage() {
           <span className="crumb-sep">/</span>
           <span className="crumb-unit">{unitTitleUI}</span>
           <span className="crumb-sep">/</span>
-          <span className="crumb-lesson">{pickText(`Lesson ${lessonIndex + 1}`, `មេរៀន ${lessonIndex + 1}`)}</span>
+          <span className="crumb-lesson">
+            {pickText(`Lesson ${lessonIndex + 1}`, `មេរៀន ${lessonIndex + 1}`)}
+          </span>
         </div>
 
         <div className="lesson-content">
@@ -604,18 +791,27 @@ export default function LessonPage() {
 
       {lockMsg && <div className="lock-toast">{lockMsg}</div>}
 
-      <div className="lesson-footer-bar">
+      {/* ✅ FIXED footer (mobile = desktop layout) */}
+      <div
+        className="lesson-footer-bar"
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999,
+          height: FOOTER_H,
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 6px)",
+          WebkitTransform: "translateZ(0)",
+          transform: "translateZ(0)",
+        }}
+      >
         <div className="lf-left">
           <button
             className="lf-btn"
             onClick={() => {
-              // ✅ save resume now
               setLocalResume("lesson", unitIdNum, lessonIdNum);
-
-              // ✅ navigate immediately (no lag)
               navigate(`/courses/${courseKey}`);
-
-              // ✅ save progress in background (don’t await)
               completeCurrentLesson({ refresh: false });
             }}
             type="button"
@@ -632,10 +828,14 @@ export default function LessonPage() {
 
             {openMenu && (
               <div className="lesson-dropdown">
-                <h4>{unitTitleUI}</h4>
+                <h4> {pickText(
+                  `Unit ${currentUnitIndex + 1}`,
+                  `ជំពូក ${currentUnitIndex + 1}`
+                )}</h4>
                 <ul>
                   {unit.lessons.map((l, idx) => {
-                    const locked = enrollCheckLoading || progressLoading ? true : !canOpenLessonDB(currentUnitIndex, unit, idx);
+                    const locked =
+                      enrollCheckLoading || progressLoading ? true : !canOpenLessonDB(currentUnitIndex, unit, idx);
                     const completed = isLessonCompleted(l.id);
                     const titleUI = pickText(l?.title, l?.title_km);
 
@@ -707,16 +907,12 @@ export default function LessonPage() {
 
           <button className="lf-nav" onClick={goNext} type="button" disabled={savingLesson}>
             {!isLastLesson
-              ? savingLesson
-                ? pickText("Saving…", "កំពុងរក្សាទុក…")
-                : pickText("Next →", "បន្ទាប់ →")
+              ? pickText("Next →", "បន្ទាប់ →")
               : hasCoding
-              ? pickText("Start Coding →", "ចាប់ផ្តើម Coding →")
-              : hasQcm
-              ? savingLesson
-                ? pickText("Saving…", "កំពុងរក្សាទុក…")
-                : pickText("Start Quiz →", "ចាប់ផ្តើមសំណួរ →")
-              : pickText("Finish →", "បញ្ចប់ →")}
+                ? pickText("Start Coding →", "ចាប់ផ្តើម Coding →")
+                : hasQcm
+                  ? pickText("Start Quiz →", "ចាប់ផ្តើមសំណួរ →")
+                  : pickText("Finish →", "បញ្ចប់ →")}
           </button>
         </div>
       </div>

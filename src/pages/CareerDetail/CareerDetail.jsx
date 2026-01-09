@@ -337,11 +337,30 @@ const CareerDetail = () => {
         ? "បន្តរៀនជំនាញ"
         : "Continue Path"
       : lang === "km"
-      ? "មើលវគ្គសិក្សាចុងក្រោយ"
-      : "View Last Course";
+        ? "មើលវគ្គសិក្សាចុងក្រោយ"
+        : "View Last Course";
   }, [pathOrderedItems, lang]);
 
-  if (loading) return <h2 className="text-center mt-5">{lang === "km" ? "កំពុងផ្ទុក..." : "Loading..."}</h2>;
+  if (loading) {
+    return (
+      <div className="tips-page">
+        <Container className="tips-container">
+          <div className="tips-loader">
+            <div className="loader-wrapper">
+              <div className="loader"></div>
+              <div className="letter-wrapper">
+                {"Loading...".split("").map((char, i) => (
+                  <span key={i} className="loader-letter">
+                    {char}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
   if (!career) return <h2 className="text-center mt-5">{lang === "km" ? "រកមិនឃើញជំនាញ" : "Career Not Found"}</h2>;
 
   const headerTitle = pickText(career.title, career.title_km);

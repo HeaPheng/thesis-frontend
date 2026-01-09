@@ -14,21 +14,20 @@
 }
 
 /* Center the main content nicely */
-.lesson-content-wrapper{
+.lesson-content-wrapper {
   flex: 1;
   width: 100%;
-  max-width: 100%;        /* ✅ full screen again */
-  margin: 0;              /* ✅ no centering */
-  padding: 0 24px 120px;  /* ✅ left padding + space for footer */
+  max-width: 100%;
+  margin: 0;
+  padding: 0 24px 120px;
   box-sizing: border-box;
 }
-
 
 /* =========================
    HEADER
 ========================= */
 .lesson-header {
-  margin-top: 26px;
+  margin-top: 10px;
   margin-left: 24px;
 }
 
@@ -50,11 +49,11 @@
   letter-spacing: -0.4px;
   color: #ffffff;
   line-height: 1.18;
-  text-align: left; 
+  text-align: left;
 }
 
 /* =========================
-   BREADCRUMB (NEW)
+   BREADCRUMB
 ========================= */
 .lesson-breadcrumb {
   display: flex;
@@ -64,7 +63,7 @@
   margin: 0 0 18px;
   font-size: 13.5px;
   color: rgba(226, 232, 240, 0.72);
-  justify-content: flex-start;  /* ✅ */
+  justify-content: flex-start;
   text-align: left;
 }
 
@@ -89,7 +88,7 @@
   background: #0f172a;
   padding: 34px;
   border-radius: 14px;
-  margin-top: 0; /* ✅ removed big gap */
+  margin-top: 0;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(148, 163, 184, 0.16);
   color: #e5e7eb;
@@ -104,8 +103,13 @@
   line-height: 1.9;
 }
 
-.lesson-html > :first-child { margin-top: 0; }
-.lesson-html > :last-child { margin-bottom: 0; }
+.lesson-html> :first-child {
+  margin-top: 0;
+}
+
+.lesson-html> :last-child {
+  margin-bottom: 0;
+}
 
 /* headings */
 .lesson-html h1,
@@ -114,14 +118,25 @@
 .lesson-html h4 {
   color: #ffffff;
   font-weight: 800;
-  margin-top: 26px;
+  margin-top: 20px;
   margin-bottom: 10px;
 }
 
-.lesson-html h1 { font-size: 30px; }
-.lesson-html h2 { font-size: 26px; }
-.lesson-html h3 { font-size: 21px; }
-.lesson-html h4 { font-size: 18px; }
+.lesson-html h1 {
+  font-size: 30px;
+}
+
+.lesson-html h2 {
+  font-size: 26px;
+}
+
+.lesson-html h3 {
+  font-size: 21px;
+}
+
+.lesson-html h4 {
+  font-size: 18px;
+}
 
 /* paragraphs */
 .lesson-html p {
@@ -226,14 +241,16 @@
   margin: 18px 0;
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.22);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
+
 .lesson-html p:has(video),
 .lesson-html p:has(iframe),
 .lesson-html p:has(img) {
   display: flex;
   justify-content: center;
 }
+
 /* Keep YouTube/Vimeo ratio */
 .lesson-html iframe {
   aspect-ratio: 16 / 9;
@@ -246,26 +263,55 @@
 }
 
 /* =========================
-   FOOTER NAV BAR
+   FOOTER NAV BAR (DESKTOP LOOK ON MOBILE)
 ========================= */
 .lesson-footer-bar {
   position: fixed;
-  bottom: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
+  z-index: 9999;
+
+  /* desktop-like styling */
   background: #0d1117;
-  padding: 12px 20px;
+  border-top: 1px solid #1e293b;
+
+  /* ✅ stable size + safe-area */
+  padding: 10px 12px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 200;
-  border-top: 1px solid #1e293b;
+  flex-wrap: nowrap;
+  gap: 12px;
+
+  /* ✅ important: dropdown must not be clipped */
+  overflow: visible;
+
+  /* helps mobile rendering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.lf-left,
+.lf-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .lf-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.lf-right {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .lf-btn {
@@ -274,6 +320,8 @@
   color: #e2e8f0;
   font-size: 20px;
   cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 10px;
 }
 
 .lf-btn:hover {
@@ -286,16 +334,19 @@
   font-size: 16px;
   color: #e2e8f0;
   cursor: pointer;
+
+  /* ✅ do NOT wrap on mobile */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 42vw;
+  padding: 6px 8px;
+  border-radius: 10px;
+  text-align: left;
 }
 
 .lf-unit-title:hover {
   color: #38bdf8;
-}
-
-.lf-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
 }
 
 .lf-nav {
@@ -305,41 +356,76 @@
   border: none;
   cursor: pointer;
   font-weight: 700;
+  white-space: nowrap;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.lf-nav:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .lf-count {
   color: #e2e8f0;
   font-size: 14px;
+  white-space: nowrap;
+  min-width: 64px;
+  text-align: center;
+  opacity: 0.9;
 }
 
 /* =========================
-   DROPDOWN
+   DROPDOWN (FIXED: ALWAYS VISIBLE + ANCHORED)
+========================= */
+/* =========================
+   DROPDOWN (FORCE FIXED ON SCREEN)
 ========================= */
 .dropdown-container {
   position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
+/* ✅ This makes it always visible above everything, not trapped in footer */
 .lesson-dropdown {
-  position: absolute;
-  bottom: 45px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 240px;
+  position: fixed !important;
+
+  /* ✅ place it above the footer */
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 12px) !important;
+
+  /* ✅ align to left side like desktop menu feel */
+  left: 12px !important;
+
+  /* ✅ responsive width */
+  width: min(360px, calc(100vw - 24px)) !important;
+
+  /* ✅ visible and scrollable */
+  max-height: min(60vh, 520px);
+  overflow: auto;
+
   background: #0f172a;
   border: 1px solid #1e293b;
   padding: 12px;
-  border-radius: 10px;
-  z-index: 500;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  margin-left: 100px;
+  border-radius: 12px;
+
+  /* ✅ must be higher than footer */
+  z-index: 999999 !important;
+
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+
+  transform: none !important;
+  margin: 0 !important;
 }
 
+/* header */
 .lesson-dropdown h4 {
   color: #e2e8f0;
   font-size: 16px;
-  margin-bottom: 10px;
+  margin: 0 0 10px;
 }
 
+/* list */
 .lesson-dropdown ul {
   list-style: none;
   padding: 0;
@@ -356,13 +442,14 @@
   background: transparent;
   border: none;
   text-align: left;
-  padding: 6px 0;
+  padding: 8px 6px;
   cursor: pointer;
   color: white;
+  border-radius: 10px;
 }
 
 .lesson-dd-btn:hover {
-  text-decoration: underline;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .lesson-dd-btn.locked {
@@ -370,7 +457,10 @@
   cursor: not-allowed;
 }
 
-/* Toast */
+
+/* =========================
+   Toast
+========================= */
 .lock-toast {
   position: fixed;
   left: 50%;
@@ -381,7 +471,7 @@
   color: #e2e8f0;
   padding: 10px 14px;
   border-radius: 999px;
-  z-index: 9999;
+  z-index: 99999;
   font-weight: 600;
 }
 
@@ -408,10 +498,109 @@
     padding: 10px 14px;
   }
 
-  .lesson-dropdown {
-    margin-left: 0;
-    left: auto;
-    right: 0;
-    transform: none;
+  /* ✅ keep footer identical layout on mobile */
+  .lesson-footer-bar {
+    padding: 10px 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
   }
+
+  .lf-left,
+  .lf-right {
+    gap: 8px;
+  }
+
+  .lf-unit-title {
+    max-width: 34vw;
+  }
+
+  .lf-count {
+    min-width: 58px;
+  }
+}
+
+/* =========================
+   LESSON LOADER (Uiverse)
+========================= */
+@keyframes load-loop {
+  0% {
+    background-position: 100%;
+  }
+  40% {
+    background-position: 50%;
+  }
+  50% {
+    background-position: 50%;
+  }
+  90% {
+    background-position: 0%;
+  }
+  100% {
+    background-position: 0%;
+  }
+}
+
+.lesson-loader {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 400px;
+  background: #000;
+}
+
+/* TEXT LOADER */
+.lesson-loader .loader-l {
+  position: relative;
+  font-family: monospace;
+  display: inline-block;
+  text-align: center;
+
+  letter-spacing: 4px;
+  padding: 12px 16px;
+  font-size: 1.5rem;
+  line-height: 1.5;
+
+  /* IMPORTANT: visible base color */
+  color: #1e293b;
+
+  /* Text shimmer */
+  background: linear-gradient(
+    to right,
+    #1e293b 33.3%,
+    #38bdf8 33.3%,
+    #38bdf8 66.6%,
+    #1e293b 66.6%
+  ) no-repeat;
+
+  background-size: 300%;
+  background-position: 100%;
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+
+  animation: load-loop 1.4s infinite ease;
+}
+
+/* BACK PLATE (same as OG, dark-safe) */
+.lesson-loader .loader-l::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 8px;
+
+  background: linear-gradient(
+    to right,
+    rgba(56, 189, 248, 0.4) 33.3%,
+    transparent 33.3%,
+    transparent 66.6%,
+    rgba(56, 189, 248, 0.4) 66.6%
+  ) no-repeat;
+
+  background-size: 300%;
+  background-position: 100%;
+
+  animation: load-loop 1.4s infinite ease;
 }
